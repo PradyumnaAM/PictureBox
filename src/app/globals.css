@@ -4,127 +4,251 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
+/* ==========================================================================
+   PictureBox design tokens — CSS custom properties
+   PictureBox is always dark; :root and .dark are kept in sync so shadcn
+   components that check .dark and server-rendered HTML both see the same values.
+   ========================================================================== */
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Surfaces */
+  --surface-container-lowest:  #0e0e0e;
+  --surface-container-low:     #1c1b1b;
+  --surface-container:         #201f1f;
+  --surface-container-high:    #2b2a2a;
+  --surface-container-highest: #353434;
+  --surface-variant:           #353434;
+  --surface-bright:            #3a3939;
+
+  /* On-surface text */
+  --on-surface:         #e5e2e1;
+  --on-surface-variant: #c4c7c7;
+
+  /* Outline */
+  --outline:         #8e9192;
+  --outline-variant: #444748;
+
+  /* Gold accent */
+  --gold:       #D4AF37;
+  --gold-hover: #b5952f;
+
+  /* shadcn token overrides → PictureBox dark palette */
+  --background:          #141313;
+  --foreground:          #e5e2e1;
+  --card:                #201f1f;
+  --card-foreground:     #e5e2e1;
+  --popover:             #1c1b1b;
+  --popover-foreground:  #e5e2e1;
+  --primary:             #D4AF37;
+  --primary-foreground:  #000000;
+  --secondary:           #353434;
+  --secondary-foreground:#e5e2e1;
+  --muted:               #2b2a2a;
+  --muted-foreground:    #8e9192;
+  --accent:              #D4AF37;
+  --accent-foreground:   #000000;
+  --destructive:         #ffb4ab;
+  --border:              oklch(1 0 0 / 10%);
+  --input:               oklch(1 0 0 / 15%);
+  --ring:                #D4AF37;
+
+  /* Base radius (shadcn reads --radius for [min(var(--radius-md),Npx)] patterns) */
+  --radius:    0.25rem;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 }
 
+/* Keep .dark in sync — shadcn components gate on this class */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background:          #141313;
+  --foreground:          #e5e2e1;
+  --card:                #201f1f;
+  --card-foreground:     #e5e2e1;
+  --popover:             #1c1b1b;
+  --popover-foreground:  #e5e2e1;
+  --primary:             #D4AF37;
+  --primary-foreground:  #000000;
+  --secondary:           #353434;
+  --secondary-foreground:#e5e2e1;
+  --muted:               #2b2a2a;
+  --muted-foreground:    #8e9192;
+  --accent:              #D4AF37;
+  --accent-foreground:   #000000;
+  --destructive:         #ffb4ab;
+  --border:              oklch(1 0 0 / 10%);
+  --input:               oklch(1 0 0 / 15%);
+  --ring:                #D4AF37;
+  --radius:              0.25rem;
+  --radius-sm:           0.125rem;
+  --radius-md:           0.25rem;
+  --radius-lg:           0.5rem;
+  --radius-xl:           0.75rem;
 }
+
+/* ==========================================================================
+   Tailwind v4 @theme — static PictureBox design tokens
+   These become Tailwind utility classes: bg-gold, text-on-surface-variant, etc.
+   ========================================================================== */
+
+@theme {
+  /* Gold */
+  --color-gold:       #D4AF37;
+  --color-gold-hover: #b5952f;
+  --color-gold-muted: color-mix(in oklch, #D4AF37 15%, transparent);
+
+  /* Surfaces */
+  --color-surface-container-lowest:  #0e0e0e;
+  --color-surface-container-low:     #1c1b1b;
+  --color-surface-container:         #201f1f;
+  --color-surface-container-high:    #2b2a2a;
+  --color-surface-container-highest: #353434;
+  --color-surface-variant:           #353434;
+  --color-surface-bright:            #3a3939;
+
+  /* On-surface */
+  --color-on-surface:         #e5e2e1;
+  --color-on-surface-variant: #c4c7c7;
+
+  /* Outline */
+  --color-outline:         #8e9192;
+  --color-outline-variant: #444748;
+
+  /* Typography scale */
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height:    3.5rem;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight:    700;
+
+  --text-display-mobile: 2rem;
+  --text-display-mobile--line-height: 2.5rem;
+  --text-display-mobile--font-weight: 700;
+
+  --text-headline: 1.5rem;
+  --text-headline--line-height: 2rem;
+  --text-headline--font-weight: 600;
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75rem;
+
+  --text-label: 0.75rem;
+  --text-label--line-height:    1rem;
+  --text-label--letter-spacing: 0.1em;
+  --text-label--font-weight:    600;
+
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.125rem;
+  --text-meta--font-weight: 500;
+
+  /* Custom spacing → px-page-x, px-page-x-mobile, gap-gutter, etc. */
+  --spacing-page-x:        4rem;    /* 64px */
+  --spacing-page-x-mobile: 1rem;    /* 16px */
+  --spacing-gutter:        1.5rem;  /* 24px */
+
+  /* Border radius */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  /* Box shadows */
+  --shadow-gold-glow: 0 12px 32px -8px rgba(212,175,55,0.15);
+  --shadow-poster:    0 8px 24px rgba(0,0,0,0.5);
+  --shadow-header:    0 8px 32px 0 rgba(0,0,0,0.4);
+}
+
+/* ==========================================================================
+   Tailwind v4 @theme inline — dynamic token forwarding
+   Forwards CSS custom properties so Tailwind utilities react to .dark changes.
+   Also wires Next.js font CSS variables → font-sans / font-display utilities.
+   ========================================================================== */
+
+@theme inline {
+  /* Fonts (Next.js sets --font-inter and --font-playfair on <body>) */
+  --font-sans:    var(--font-inter), "Inter", sans-serif;
+  --font-display: var(--font-playfair), "Playfair Display", serif;
+  --font-mono:    ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
+  --font-heading: var(--font-playfair), "Playfair Display", serif;
+
+  /* shadcn token forwarding — required for bg-primary, text-foreground, etc. */
+  --color-background:          var(--background);
+  --color-foreground:          var(--foreground);
+  --color-card:                var(--card);
+  --color-card-foreground:     var(--card-foreground);
+  --color-popover:             var(--popover);
+  --color-popover-foreground:  var(--popover-foreground);
+  --color-primary:             var(--primary);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-secondary:           var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-muted:               var(--muted);
+  --color-muted-foreground:    var(--muted-foreground);
+  --color-accent:              var(--accent);
+  --color-accent-foreground:   var(--accent-foreground);
+  --color-destructive:         var(--destructive);
+  --color-border:              var(--border);
+  --color-input:               var(--input);
+  --color-ring:                var(--ring);
+}
+
+/* ==========================================================================
+   Base layer
+   ========================================================================== */
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  body {
+    background-color: #141313;
+    color: #e5e2e1;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background-color: #D4AF37;
+    color: #000;
+  }
+}
+
+/* ==========================================================================
+   Custom utilities
+   ========================================================================== */
+
+@layer utilities {
+  /* Page max-width — use max-w-page in components */
+  .max-w-page {
+    max-width: 1440px;
+  }
+
+  /* Background image overlays */
+  .bg-poster-overlay {
+    background-image: linear-gradient(
+      to bottom,
+      rgba(20, 19, 19, 0.7) 0%,
+      rgba(20, 19, 19, 0) 30%,
+      rgba(20, 19, 19, 0) 70%,
+      rgba(20, 19, 19, 0.9) 100%
+    );
+  }
+
+  .bg-hero-overlay {
+    background-image: linear-gradient(
+      to top,
+      #141313 0%,
+      rgba(20, 19, 19, 0.6) 50%,
+      transparent 100%
+    );
+  }
+
+  /* Scrollbar hiding */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
