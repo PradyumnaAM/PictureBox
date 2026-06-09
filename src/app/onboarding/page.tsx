@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 
@@ -16,14 +17,14 @@ const GENRES = [
 ]
 
 const SERVICES = [
-  { id: 8,    name: 'Netflix',      color: '#E50914' },
-  { id: 119,  name: 'Amazon Prime', color: '#00A8E1' },
-  { id: 337,  name: 'Disney+',      color: '#113CCF' },
-  { id: 1899, name: 'HBO Max',       color: '#5B2D8E' },
-  { id: 350,  name: 'Apple TV+',    color: '#4A4A4A' },
-  { id: 15,   name: 'Hulu',         color: '#1CE783' },
-  { id: 386,  name: 'Peacock',      color: '#E8A12B' },
-  { id: 531,  name: 'Paramount+',   color: '#0064FF' },
+  { id: 8,    name: 'Netflix',      logo: 'https://image.tmdb.org/t/p/original/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg' },
+  { id: 119,  name: 'Amazon Prime', logo: 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg' },
+  { id: 337,  name: 'Disney+',      logo: 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19d.jpg' },
+  { id: 1899, name: 'HBO Max',       logo: 'https://image.tmdb.org/t/p/original/Ajqyt5aNxNvaG0sDlXd3tP5t0MQ.jpg' },
+  { id: 350,  name: 'Apple TV+',    logo: 'https://image.tmdb.org/t/p/original/4KAy34EHvRM25Ih8wb82AJE7gS5.jpg' },
+  { id: 15,   name: 'Hulu',         logo: 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg' },
+  { id: 386,  name: 'Peacock',      logo: 'https://image.tmdb.org/t/p/original/8VCV78prwd9QzZnEm0ReO6bERDa.jpg' },
+  { id: 531,  name: 'Paramount+',   logo: 'https://image.tmdb.org/t/p/original/h5DcR0J2EESLitnhR8xLG1QymTE.jpg' },
 ]
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -166,12 +167,14 @@ export default function OnboardingPage() {
                         : 'border-outline-variant bg-surface-container/40 hover:border-gold/50',
                     )}
                   >
-                    {/* Colored initial circle */}
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-sm"
-                      style={{ backgroundColor: service.color }}
-                    >
-                      {service.name[0]}
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high flex-shrink-0">
+                      <Image
+                        src={service.logo}
+                        alt={service.name}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <span
                       className={cn(
