@@ -176,6 +176,9 @@ export default function LogModal({
         body: JSON.stringify({
           tmdb_id: movie.id,
           media_type: 'movie',
+          title: movie.title,
+          poster_path: movie.poster_path,
+          release_date: movie.release_date,
           title_id: titleId ?? undefined,
           status,
           rating: isWatched && rating > 0 ? rating : null,
