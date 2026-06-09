@@ -61,13 +61,13 @@ export default function Navbar({ activePath }: NavbarProps) {
           </button>
 
           {/* Log button — desktop only */}
-          <button
-            type="button"
+          <Link
+            href="/sign-up"
             className="hidden md:flex items-center gap-1.5 bg-gold text-black font-sans text-label uppercase tracking-widest font-bold px-4 py-2 rounded hover:bg-gold-hover active:scale-95 transition-all"
           >
             <Pencil className="w-3.5 h-3.5" />
             Log
-          </button>
+          </Link>
 
           {/* Avatar placeholder */}
           <div className="shrink-0 w-10 h-10 rounded-full overflow-hidden border border-white/10 hover:border-gold transition-colors cursor-pointer bg-surface-container-high flex items-center justify-center">

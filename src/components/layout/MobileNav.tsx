@@ -16,8 +16,15 @@ function isActive(linkHref: string, currentPath: string): boolean {
   return currentPath.startsWith(linkHref)
 }
 
+const AUTH_PATHS = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/onboarding']
+
+function isAuthPath(pathname: string) {
+  return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
+}
+
 export default function MobileNav() {
   const pathname = usePathname()
+  if (isAuthPath(pathname)) return null
 
   return (
     <nav

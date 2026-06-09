@@ -115,6 +115,9 @@
   --color-outline:         #8e9192;
   --color-outline-variant: #444748;
 
+  /* Error (alias for destructive — use text-error, bg-error, border-error) */
+  --color-error: #ffb4ab;
+
   /* Typography scale */
   --text-display-lg: 3rem;
   --text-display-lg--line-height:    3.5rem;
