@@ -98,7 +98,8 @@ export default async function FilmPage({ params }: PageProps) {
             alt={movie.title}
             fill
             priority
-            className="object-cover object-center"
+            className="object-cover"
+            style={{ objectPosition: 'center 20%' }}
             sizes="100vw"
           />
         )}

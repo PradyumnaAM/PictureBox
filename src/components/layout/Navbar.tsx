@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Pencil, Search } from 'lucide-react'
@@ -12,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import SearchModal from '@/components/search/SearchModal'
 
 interface NavbarProps {
   activePath: string
@@ -35,8 +37,22 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
   const router = useRouter()
   const initial = user?.email?.[0].toUpperCase() ?? 'U'
   const profileSlug = user?.user_metadata?.username ?? user?.id ?? ''
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+
+  // Cmd+K / Ctrl+K to open search from anywhere
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsSearchOpen(true)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
 
   return (
+    <>
     <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-surface-container/60 backdrop-blur-xl border-b border-white/10 shadow-header">
       <div className="max-w-page mx-auto h-full flex items-center justify-between px-page-x-mobile md:px-page-x">
 
@@ -73,6 +89,7 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
           <button
             type="button"
             aria-label="Search"
+            onClick={() => setIsSearchOpen(true)}
             className="p-2 text-on-surface-variant hover:text-gold transition-colors"
           >
             <Search className="w-5 h-5" />
@@ -162,5 +179,7 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
 
       </div>
     </header>
+    <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+    </>
   )
 }
