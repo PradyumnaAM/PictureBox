@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 
+import { Toaster } from 'sonner'
+
 import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import MobileNav from '@/components/layout/MobileNav'
 
@@ -58,6 +60,7 @@ export default function RootLayout({
           {children}
         </main>
         <MobileNav />
+        <Toaster position="bottom-right" theme="dark" />
       </body>
     </html>
   )

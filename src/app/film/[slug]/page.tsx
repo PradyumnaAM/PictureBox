@@ -306,7 +306,9 @@ export default async function FilmPage({ params }: PageProps) {
             {/* Film Details */}
             <div className="bg-surface-container rounded-xl p-6 mt-6">
               <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                {movie.original_title !== movie.title && (
+                {movie.original_title &&
+                  movie.original_title !== movie.title &&
+                  /^[\x00-\x7F]*$/.test(movie.original_title) && (
                   <>
                     <span className="text-on-surface-variant">Original Title</span>
                     <span className="text-on-surface break-words">{movie.original_title}</span>

@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Check, Loader2, Star, X } from 'lucide-react'
+import { Check, CheckCircle, Loader2, Star, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { getPosterUrl, formatReleaseYear } from '@/lib/tmdb/helpers'
 import { cn } from '@/lib/utils'
@@ -160,6 +161,7 @@ export default function LogModal({
   )
   const [isRewatch, setIsRewatch] = useState(existingLog?.rewatch ?? false)
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   if (!isOpen) return null
@@ -193,8 +195,15 @@ export default function LogModal({
         setError(body.error ?? 'Failed to save. Please try again.')
         return
       }
+      setSaved(true)
+      toast.success('Logged!', {
+        description: `${movie.title} added to your diary.`,
+        duration: 3000,
+      })
       router.refresh()
-      onClose()
+      setTimeout(() => {
+        onClose()
+      }, 1500)
     } catch {
       setError('Network error. Please try again.')
     } finally {
@@ -333,11 +342,21 @@ export default function LogModal({
           {/* Save */}
           <button
             type="button"
-            disabled={saving}
+            disabled={saving || saved}
             onClick={save}
-            className="w-full bg-gold text-black font-label uppercase font-bold py-3 rounded-md hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className={cn(
+              'w-full font-label uppercase font-bold py-3 rounded-md transition-all flex items-center justify-center gap-2',
+              saved
+                ? 'bg-green-600 text-white cursor-not-allowed'
+                : 'bg-gold text-black hover:bg-gold-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
+            )}
           >
-            {saving ? (
+            {saved ? (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                Logged!
+              </>
+            ) : saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Saving…

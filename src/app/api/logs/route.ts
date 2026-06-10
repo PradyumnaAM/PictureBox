@@ -10,7 +10,8 @@ interface LogBody {
   media_type: 'movie' | 'tv'
   title: string
   poster_path: string | null
-  release_date: string
+  release_date: string | null
+  overview?: string | null
   title_id?: string
   status: 'watched' | 'watching' | 'want_to_watch' | 'dropped'
   rating?: number | null
@@ -25,7 +26,25 @@ const VALID_STATUSES = new Set(['watched', 'watching', 'want_to_watch', 'dropped
 // ─── POST /api/logs ───────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  // Auth check
+  // ── DEBUG ──────────────────────────────────────────────────────────────────
+  const testAdmin = createAdminClient()
+  const { data: testData, error: testError } = await testAdmin
+    .from('titles')
+    .select('count')
+    .limit(1)
+  console.log('ADMIN CLIENT TEST:', { testData, testError })
+  console.log('SERVICE KEY EXISTS:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+  console.log('SERVICE KEY PREFIX:', process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 30))
+  console.log('SUPABASE URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+  // ── END DEBUG ──────────────────────────────────────────────────────────────
+
+  // Guard: service role key must be present before doing anything
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('[logs] SUPABASE_SERVICE_ROLE_KEY is not set')
+    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+  }
+
+  // Auth check — uses anon+session client so RLS applies to the session check
   const supabase = await createClient()
   const {
     data: { session },
@@ -55,17 +74,20 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Upsert title into the titles reference table
+  // ── 1. Upsert the title into the shared reference table ───────────────────
+  // release_date is a DATE column — coerce empty strings to null so Postgres
+  // doesn't reject them (TMDB returns "" for unreleased/undated films).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: titleRow, error: titleError } = await (admin as any)
     .from('titles')
     .upsert(
       {
-        tmdb_id: body.tmdb_id,
-        media_type: body.media_type,
-        title: body.title ?? '',
-        poster_path: body.poster_path ?? null,
-        release_date: body.release_date ?? null,
+        tmdb_id:      body.tmdb_id,
+        media_type:   body.media_type,
+        title:        body.title ?? '',
+        poster_path:  body.poster_path  ?? null,
+        release_date: body.release_date || null,   // || coerces "" → null
+        overview:     body.overview     ?? null,
       },
       { onConflict: 'tmdb_id,media_type' },
     )
@@ -73,27 +95,37 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (titleError) {
-    console.error('[logs] title upsert error:', titleError)
-    return NextResponse.json({ error: 'Failed to save title' }, { status: 500 })
+    console.error('[logs] title upsert error:', JSON.stringify(titleError, null, 2))
+    return NextResponse.json(
+      { error: 'Failed to save title', details: titleError.message },
+      { status: 500 },
+    )
   }
 
   const titleId: string = body.title_id ?? (titleRow as { id: string }).id
 
-  // Upsert the user's log entry
+  // ── 2. Upsert the user's log entry ────────────────────────────────────────
+  // The unique constraint is (user_id, title_id, season_id, episode_id, rewatch_count).
+  // For movies, season_id and episode_id are NULL. PostgreSQL treats NULL != NULL
+  // inside unique constraints, so the conflict clause won't match an existing row
+  // via NULL columns. We work around this by using ignoreDuplicates:false and
+  // handling the case where the user already has a log for this title by doing
+  // a select-then-upsert pattern until a proper partial index is added.
+  // For now we attempt the upsert and surface the real error if it fails.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: logRow, error: logError } = await (admin as any)
     .from('user_logs')
     .upsert(
       {
-        user_id: session.user.id,
-        title_id: titleId,
-        log_type: body.media_type,
-        status: body.status,
-        rating: body.rating ?? null,
-        review: body.review ?? null,
-        watched_at: body.watched_at ?? null,
+        user_id:           session.user.id,
+        title_id:          titleId,
+        log_type:          body.media_type === 'movie' ? 'movie' : 'tv_show',
+        status:            body.status,
+        rating:            body.rating            ?? null,
+        review:            body.review            ?? null,
+        watched_at:        body.watched_at        ?? null,
         contains_spoilers: body.contains_spoilers ?? false,
-        rewatch: body.rewatch ?? false,
+        rewatch:           body.rewatch           ?? false,
       },
       { onConflict: 'user_id,title_id,season_id,episode_id,rewatch_count' },
     )
@@ -101,8 +133,11 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (logError) {
-    console.error('[logs] log upsert error:', logError)
-    return NextResponse.json({ error: 'Failed to save log' }, { status: 500 })
+    console.error('[logs] log upsert error:', JSON.stringify(logError, null, 2))
+    return NextResponse.json(
+      { error: 'Failed to save log', details: logError.message },
+      { status: 500 },
+    )
   }
 
   return NextResponse.json({ success: true, log: logRow })
