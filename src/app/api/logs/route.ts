@@ -21,7 +21,14 @@ interface LogBody {
   rewatch?: boolean
 }
 
-const VALID_STATUSES = new Set(['watched', 'watching', 'want_to_watch', 'dropped'])
+const VALID_STATUSES = new Set([
+  'watched',
+  'watching',
+  'want_to_watch',
+  'dropped',
+  'completed',
+  'on_hold',
+])
 
 // ─── POST /api/logs ───────────────────────────────────────────────────────────
 

@@ -40,6 +40,11 @@ export function getProfileUrl(path: string | null | undefined): string | null {
   return `${IMAGE_BASE}/w185${path}`
 }
 
+export function getStillUrl(path: string | null | undefined): string | null {
+  if (!path) return null
+  return `${IMAGE_BASE}/w300${path}`
+}
+
 // ----------------------------------------------------------------------------
 // Formatting
 // ----------------------------------------------------------------------------

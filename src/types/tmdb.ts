@@ -160,6 +160,12 @@ export interface TMDBTVShow {
   tagline: string
   type: string
   in_production: boolean
+  created_by?: Array<{
+    id: number
+    name: string
+    gender?: number
+    profile_path: string | null
+  }>
   networks: Array<{
     id: number
     name: string
