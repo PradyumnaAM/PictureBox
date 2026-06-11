@@ -33,24 +33,6 @@ const VALID_STATUSES = new Set([
 // ─── POST /api/logs ───────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  // ── DEBUG ──────────────────────────────────────────────────────────────────
-  const testAdmin = createAdminClient()
-  const { data: testData, error: testError } = await testAdmin
-    .from('titles')
-    .select('count')
-    .limit(1)
-  console.log('ADMIN CLIENT TEST:', { testData, testError })
-  console.log('SERVICE KEY EXISTS:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
-  console.log('SERVICE KEY PREFIX:', process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 30))
-  console.log('SUPABASE URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-  // ── END DEBUG ──────────────────────────────────────────────────────────────
-
-  // Guard: service role key must be present before doing anything
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('[logs] SUPABASE_SERVICE_ROLE_KEY is not set')
-    return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
-  }
-
   // Auth check — uses anon+session client so RLS applies to the session check
   const supabase = await createClient()
   const {

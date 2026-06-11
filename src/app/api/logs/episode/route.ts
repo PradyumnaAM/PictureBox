@@ -32,12 +32,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  const admin = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = createAdminClient() as any
   const today = new Date().toISOString().split('T')[0]
 
-  // ── 1. Ensure the TV show exists in the titles table ─────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: titleRow, error: titleError } = await (admin as any)
+  // ── 1. Resolve title UUID ──────────────────────────────────────────────────
+  let titleId: string | null = null
+  const { data: titleUpsert, error: titleUpsertError } = await admin
     .from('titles')
     .upsert(
       { tmdb_id: body.tmdb_show_id, media_type: 'tv', title: '' },
@@ -46,54 +47,75 @@ export async function POST(req: NextRequest) {
     .select('id')
     .single()
 
-  if (titleError) {
-    // If upsert fails (e.g., title is NOT NULL), try a plain select instead
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existing, error: selectError } = await (admin as any)
+  if (!titleUpsertError && titleUpsert) {
+    titleId = (titleUpsert as { id: string }).id
+  } else {
+    const { data: existing } = await admin
       .from('titles')
       .select('id')
       .eq('tmdb_id', body.tmdb_show_id)
       .eq('media_type', 'tv')
       .single()
-
-    if (selectError || !existing) {
-      console.error('[logs/episode] title error:', titleError)
-      return NextResponse.json({ error: 'Failed to resolve title' }, { status: 500 })
-    }
-
-    // Use existing title
-    const titleId: string = (existing as { id: string }).id
-    return await upsertEpisodeLog(admin, session.user.id, titleId, body, today)
+    titleId = (existing as { id: string } | null)?.id ?? null
   }
 
-  const titleId: string = (titleRow as { id: string }).id
-  return await upsertEpisodeLog(admin, session.user.id, titleId, body, today)
-}
+  if (!titleId) {
+    return NextResponse.json({ error: 'Failed to resolve title' }, { status: 500 })
+  }
 
-async function upsertEpisodeLog(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  admin: any,
-  userId: string,
-  titleId: string,
-  body: { season_number: number; episode_tmdb_id: number },
-  today: string,
-) {
+  // ── 2. Resolve season UUID ─────────────────────────────────────────────────
+  const { data: seasonRow, error: seasonError } = await admin
+    .from('seasons')
+    .upsert(
+      { title_id: titleId, season_number: body.season_number },
+      { onConflict: 'title_id,season_number' },
+    )
+    .select('id')
+    .single()
+
+  if (seasonError || !seasonRow) {
+    console.error('[logs/episode] season upsert error:', seasonError)
+    return NextResponse.json({ error: 'Failed to resolve season' }, { status: 500 })
+  }
+
+  const seasonId: string = (seasonRow as { id: string }).id
+
+  // ── 3. Resolve episode UUID ────────────────────────────────────────────────
+  const { data: episodeRow, error: episodeError } = await admin
+    .from('episodes')
+    .upsert(
+      {
+        season_id: seasonId,
+        episode_number: body.episode_number,
+        tmdb_episode_id: body.episode_tmdb_id,
+      },
+      { onConflict: 'season_id,episode_number' },
+    )
+    .select('id')
+    .single()
+
+  if (episodeError || !episodeRow) {
+    console.error('[logs/episode] episode upsert error:', episodeError)
+    return NextResponse.json({ error: 'Failed to resolve episode' }, { status: 500 })
+  }
+
+  const episodeId: string = (episodeRow as { id: string }).id
+
+  // ── 4. Upsert the watch log ────────────────────────────────────────────────
   const { error: logError } = await admin
     .from('user_logs')
     .upsert(
       {
-        user_id: userId,
+        user_id: session.user.id,
         title_id: titleId,
         log_type: 'tv_episode',
         status: 'watched',
         watched_at: today,
-        season_id: body.season_number,
-        episode_id: body.episode_tmdb_id,
+        season_id: seasonId,
+        episode_id: episodeId,
       },
       { onConflict: 'user_id,title_id,season_id,episode_id,rewatch_count' },
     )
-    .select()
-    .single()
 
   if (logError) {
     console.error('[logs/episode] log upsert error:', JSON.stringify(logError, null, 2))
@@ -132,41 +154,56 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  const admin = createAdminClient()
-
-  // ── 1. Find the title ─────────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: titleRow } = await (admin as any)
+  const admin = createAdminClient() as any
+
+  // ── 1. Find title UUID ─────────────────────────────────────────────────────
+  const { data: titleRow } = await admin
     .from('titles')
     .select('id')
     .eq('tmdb_id', body.tmdb_show_id)
     .eq('media_type', 'tv')
     .single()
 
-  if (!titleRow) {
-    // Nothing to delete — title never logged
-    return NextResponse.json({ success: true })
+  if (!titleRow) return NextResponse.json({ success: true })
+  const titleId: string = (titleRow as { id: string }).id
+
+  // ── 2. Find season UUID ────────────────────────────────────────────────────
+  const { data: seasonRow } = await admin
+    .from('seasons')
+    .select('id')
+    .eq('title_id', titleId)
+    .eq('season_number', body.season_number)
+    .single()
+
+  if (!seasonRow) return NextResponse.json({ success: true })
+  const seasonId: string = (seasonRow as { id: string }).id
+
+  // ── 3. Find episode UUID ───────────────────────────────────────────────────
+  let episodeQuery = admin
+    .from('episodes')
+    .select('id')
+    .eq('season_id', seasonId)
+    .eq('episode_number', body.episode_number)
+
+  if (body.episode_tmdb_id) {
+    episodeQuery = episodeQuery.eq('tmdb_episode_id', body.episode_tmdb_id)
   }
 
-  const titleId: string = (titleRow as { id: string }).id
-  const deletedAt = new Date().toISOString()
+  const { data: episodeRow } = await episodeQuery.single()
+  if (!episodeRow) return NextResponse.json({ success: true })
+  const episodeId: string = (episodeRow as { id: string }).id
 
-  // ── 2. Soft-delete by episode_id if available, else by season + episode ───
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (admin as any)
+  // ── 4. Soft-delete the log ─────────────────────────────────────────────────
+  const { error } = await admin
     .from('user_logs')
-    .update({ deleted_at: deletedAt })
+    .update({ deleted_at: new Date().toISOString() })
     .eq('user_id', session.user.id)
     .eq('title_id', titleId)
     .eq('log_type', 'tv_episode')
-    .eq('season_id', body.season_number)
+    .eq('season_id', seasonId)
+    .eq('episode_id', episodeId)
     .is('deleted_at', null)
-
-  if (body.episode_tmdb_id) {
-    query = query.eq('episode_id', body.episode_tmdb_id)
-  }
-
-  const { error } = await query
 
   if (error) {
     console.error('[logs/episode] delete error:', JSON.stringify(error, null, 2))

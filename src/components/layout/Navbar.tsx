@@ -99,7 +99,7 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
             <>
               {/* Pencil icon — logged in, desktop only */}
               <Link
-                href="/log"
+                href="/diary"
                 aria-label="Log a film"
                 className="hidden md:flex w-10 h-10 rounded-full bg-gold text-black items-center justify-center hover:bg-gold-hover active:scale-95 transition-all"
               >

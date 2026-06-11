@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createAdminClient } from '@/lib/supabase/admin'
 import GroupItemsList, { type GroupItem } from '@/components/groups/GroupItemsList'
 import AddToGroupSearch from '@/components/groups/AddToGroupSearch'
@@ -106,9 +105,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
   const extraCount = Math.max(0, members.length - 5)
 
   return (
-    <>
-      <NavbarWrapper />
-      <div className="bg-background min-h-screen pt-28 pb-16">
+    <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-4xl mx-auto px-4 md:px-8">
 
           {/* Header */}
@@ -164,6 +161,5 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
         </div>
       </div>
-    </>
   )
 }

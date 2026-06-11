@@ -3,7 +3,6 @@ import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createAdminClient } from '@/lib/supabase/admin'
 import FollowButton from '@/components/profile/FollowButton'
 import Footer from '@/components/layout/Footer'
@@ -67,7 +66,6 @@ export default async function MembersPage() {
 
   return (
     <>
-      <NavbarWrapper />
       <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-7xl mx-auto px-4 md:px-16">
           {/* Header */}

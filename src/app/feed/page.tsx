@@ -7,7 +7,6 @@ import { Film, Star, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPosterUrl, slugify, formatReleaseYear } from '@/lib/tmdb/helpers'
 
@@ -261,9 +260,7 @@ export default async function FeedPage() {
   const hasFollows = followingIds.length > 0
 
   return (
-    <>
-      <NavbarWrapper />
-      <div className="bg-background min-h-screen pt-28 pb-16">
+    <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-5xl mx-auto px-4 md:px-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
@@ -395,6 +392,5 @@ export default async function FeedPage() {
           </div>
         </div>
       </div>
-    </>
   )
 }

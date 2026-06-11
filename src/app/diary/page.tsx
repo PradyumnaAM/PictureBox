@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createAdminClient } from '@/lib/supabase/admin'
 import DiaryClient, { type DiaryEntry } from './DiaryClient'
 
@@ -49,9 +48,7 @@ export default async function DiaryPage() {
   const entries = (logs ?? []) as DiaryEntry[]
 
   return (
-    <>
-      <NavbarWrapper />
-      <div className="bg-background min-h-screen pt-28 pb-16">
+    <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-4xl mx-auto px-4 md:px-8">
           <h1 className="font-display text-4xl text-on-surface">My Diary</h1>
           <p className="text-on-surface-variant mt-1 mb-8">
@@ -61,6 +58,5 @@ export default async function DiaryPage() {
           <DiaryClient entries={entries} />
         </div>
       </div>
-    </>
   )
 }

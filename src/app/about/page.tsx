@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import Footer from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
@@ -13,7 +12,6 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <NavbarWrapper />
       <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-3xl mx-auto px-4 md:px-8">
 

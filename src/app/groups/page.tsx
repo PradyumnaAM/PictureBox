@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Users } from 'lucide-react'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createAdminClient } from '@/lib/supabase/admin'
 import CreateGroupModal from '@/components/groups/CreateGroupModal'
 import JoinGroupModal from '@/components/groups/JoinGroupModal'
@@ -72,9 +71,7 @@ export default async function GroupsPage() {
   }
 
   return (
-    <>
-      <NavbarWrapper />
-      <div className="bg-background min-h-screen pt-28 pb-16">
+    <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-4xl mx-auto px-4 md:px-8">
 
           {/* Header */}
@@ -139,6 +136,5 @@ export default async function GroupsPage() {
 
         </div>
       </div>
-    </>
   )
 }

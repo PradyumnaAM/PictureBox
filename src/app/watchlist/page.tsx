@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createAdminClient } from '@/lib/supabase/admin'
 import WatchlistClient, { type WatchlistItem } from './WatchlistClient'
 
@@ -48,13 +47,10 @@ export default async function WatchlistPage() {
   const items = (watchlist ?? []) as WatchlistItem[]
 
   return (
-    <>
-      <NavbarWrapper />
-      <div className="bg-background min-h-screen pt-28 pb-16">
+    <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-7xl mx-auto px-4 md:px-16">
           <WatchlistClient items={items} />
         </div>
       </div>
-    </>
   )
 }

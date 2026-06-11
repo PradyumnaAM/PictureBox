@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import type { Metadata } from 'next'
 
-import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import { createAdminClient } from '@/lib/supabase/admin'
 import ProfileSettings from '@/components/settings/ProfileSettings'
 import StreamingSettings from '@/components/settings/StreamingSettings'
@@ -71,9 +70,7 @@ export default async function SettingsPage() {
   }) as Profile
 
   return (
-    <>
-      <NavbarWrapper />
-      <div className="bg-background min-h-screen pt-28 pb-16">
+    <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-3xl mx-auto px-4 md:px-8">
           <h1 className="font-display text-3xl text-on-surface mb-8">Settings</h1>
 
@@ -83,6 +80,5 @@ export default async function SettingsPage() {
           <DangerZone />
         </div>
       </div>
-    </>
   )
 }
