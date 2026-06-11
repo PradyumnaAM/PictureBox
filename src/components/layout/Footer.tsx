@@ -13,6 +13,12 @@ export default function Footer() {
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link
+              href="/about"
+              className="text-on-surface-variant text-sm hover:text-gold transition-colors"
+            >
+              About
+            </Link>
+            <Link
               href="/privacy"
               className="text-on-surface-variant text-sm hover:text-gold transition-colors"
             >

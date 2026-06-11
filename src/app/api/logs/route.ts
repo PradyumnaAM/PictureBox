@@ -149,3 +149,41 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ success: true, log: logRow })
 }
+
+// ─── DELETE /api/logs ─────────────────────────────────────────────────────────
+
+export async function DELETE(req: NextRequest) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  let body: { log_id: string }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  if (!body.log_id) {
+    return NextResponse.json({ error: 'Missing log_id' }, { status: 400 })
+  }
+
+  const admin = createAdminClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin as any)
+    .from('user_logs')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', body.log_id)
+    .eq('user_id', user.id)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
+}
