@@ -34,9 +34,9 @@ export const metadata: Metadata = {
   },
   description: 'Track every film and every episode. The social tracker for serious cinephiles.',
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
   },
   keywords: ['film tracker', 'movie tracker', 'TV tracker', 'letterboxd alternative', 'film diary'],
   openGraph: {
