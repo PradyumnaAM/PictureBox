@@ -50,13 +50,13 @@ function StarRating({
           onMouseEnter={() => setHover(n)}
           onClick={() => onChange(n === rating ? 0 : n)}
           aria-label={`Rate ${n} stars`}
-          className="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-gold transition-colors"
+          className="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:text-ember transition-colors"
         >
           <svg
             viewBox="0 0 24 24"
             className={cn(
               'w-5 h-5',
-              n <= display ? 'fill-gold text-gold' : 'fill-none text-on-surface-variant/40',
+              n <= display ? 'fill-ember text-ember' : 'fill-none text-on-surface-variant/40',
             )}
             stroke="currentColor"
             strokeWidth={1.5}
@@ -152,7 +152,7 @@ function TrackShowModal({
               </div>
             )}
             <div>
-              <h2 className="font-display text-lg text-on-surface font-bold leading-tight">
+              <h2 className="font-display text-xl text-cream font-semibold leading-tight">
                 {show.name}
               </h2>
               {year && (
@@ -183,8 +183,8 @@ function TrackShowModal({
                   className={cn(
                     'px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                     status === value
-                      ? 'bg-gold text-black'
-                      : 'bg-surface-container-high border border-outline-variant text-on-surface-variant hover:border-gold/50',
+                      ? 'bg-ember text-black'
+                      : 'bg-surface-container-high border border-outline-variant text-on-surface-variant hover:border-ember/50',
                   )}
                 >
                   {label}
@@ -216,7 +216,7 @@ function TrackShowModal({
                 className={cn(
                   'w-full bg-surface-container-high border border-outline-variant rounded-md px-4 py-3',
                   'text-on-surface placeholder:text-on-surface-variant',
-                  'focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors',
+                  'focus:outline-none focus:border-ember focus:ring-1 focus:ring-ember transition-colors',
                   'resize-none pb-6',
                 )}
               />
@@ -242,7 +242,7 @@ function TrackShowModal({
               'w-full font-label uppercase font-bold py-3 rounded-md transition-all flex items-center justify-center gap-2',
               saved
                 ? 'bg-green-600 text-white cursor-not-allowed'
-                : 'bg-gold text-black hover:bg-gold-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
+                : 'bg-ember text-black hover:bg-ember-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             {saved ? (
@@ -275,7 +275,7 @@ export default function TrackShowButton({ show }: { show: ShowMeta }) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="bg-gold text-black font-sans text-label uppercase tracking-widest font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-gold-hover active:scale-95 transition-all"
+        className="bg-ember text-black font-sans text-label uppercase tracking-widest font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-ember-hover active:scale-95 transition-all"
       >
         <Tv className="w-4 h-4" />
         Track This Show

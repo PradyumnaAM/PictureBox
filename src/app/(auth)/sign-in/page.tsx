@@ -20,12 +20,21 @@ const signInSchema = z.object({
 
 type FormData = z.infer<typeof signInSchema>
 
+// Only accept a same-origin RELATIVE path to prevent open redirects.
+function safeRedirect(raw: string | null): string {
+  if (!raw) return '/feed'
+  // Must be a root-relative path; reject protocol-relative ('//', '/\') and any scheme/host.
+  if (!raw.startsWith('/') || raw.startsWith('//') || raw.startsWith('/\\')) return '/feed'
+  if (raw.includes(':')) return '/feed'
+  return raw
+}
+
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const input =
   'w-full bg-surface-container-high border border-outline-variant rounded-md px-4 py-3 ' +
   'text-on-surface placeholder:text-on-surface-variant ' +
-  'focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors'
+  'focus:outline-none focus:border-ember focus:ring-1 focus:ring-ember transition-colors'
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -38,7 +47,7 @@ export default function SignInPage() {
   // Read ?redirect= without useSearchParams (avoids Suspense requirement)
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
-    setRedirectTo(p.get('redirect') ?? '/feed')
+    setRedirectTo(safeRedirect(p.get('redirect')))
   }, [])
 
   const form = useForm<FormData>({
@@ -55,7 +64,7 @@ export default function SignInPage() {
     })
     // Never reveal which field is wrong
     if (error) { setServerError('Invalid email or password'); return }
-    router.push(redirectTo)
+    router.push(safeRedirect(redirectTo))
   }
 
   const errors = form.formState.errors
@@ -66,8 +75,8 @@ export default function SignInPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <p className="font-display text-2xl text-gold mb-1">PictureBox</p>
-          <h1 className="text-xl font-semibold text-on-surface mb-1">Welcome back.</h1>
+          <p className="font-label text-label uppercase text-ember mb-3">Members Only</p>
+          <h1 className="font-display text-[1.75rem] font-semibold text-cream mb-1.5">Welcome back.</h1>
           <p className="text-on-surface-variant text-sm">Sign in to continue.</p>
         </div>
 
@@ -99,7 +108,7 @@ export default function SignInPage() {
               </label>
               <Link
                 href="/forgot-password"
-                className="text-xs text-on-surface-variant hover:text-gold transition-colors"
+                className="text-xs text-on-surface-variant hover:text-ember transition-colors"
               >
                 Forgot password?
               </Link>
@@ -138,7 +147,7 @@ export default function SignInPage() {
           <button
             type="submit"
             disabled={form.formState.isSubmitting}
-            className="w-full bg-gold text-black font-label uppercase font-bold py-3 rounded-md hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-ember text-black font-label uppercase font-bold py-3 rounded-md hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {form.formState.isSubmitting ? (
               <>
@@ -154,7 +163,7 @@ export default function SignInPage() {
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-on-surface-variant">
           Don&apos;t have an account?{' '}
-          <Link href="/sign-up" className="text-gold hover:text-gold/80 transition-colors">
+          <Link href="/sign-up" className="text-ember hover:text-ember/80 transition-colors">
             Sign up
           </Link>
         </p>

@@ -5,17 +5,17 @@ export const metadata: Metadata = { title: 'Privacy Policy — PictureBox' }
 export default function PrivacyPage() {
   return (
     <div className="text-on-surface leading-relaxed">
-      <h1 className="font-display text-3xl text-on-surface mb-2">Privacy Policy</h1>
+      <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-2">Privacy Policy</h1>
       <span className="text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded-full mb-8 inline-block">
         Last updated: June 2026
       </span>
 
       <p className="text-on-surface-variant mb-4 leading-relaxed">
-        PictureBox ("we", "our", "us") is committed to protecting your privacy. This policy explains
+        PictureBox (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) is committed to protecting your privacy. This policy explains
         what information we collect, how we use it, and your rights over it.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         What We Collect
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -29,7 +29,7 @@ export default function PrivacyPage() {
         <li>IP address, used solely for rate limiting and abuse prevention</li>
       </ul>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         What We Don&apos;t Collect
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
         third parties.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         How We Use Your Information
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
         reset). We will never send marketing emails without your explicit consent.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         Third-Party Services
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         Data Retention
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
         retained indefinitely.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         Your Rights
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
         reviews from our systems.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         Children (COPPA)
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
         personal data, please contact us and we will delete it promptly.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         GDPR (EU Users)
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -107,19 +107,19 @@ export default function PrivacyPage() {
         To exercise these rights, contact us at{' '}
         <a
           href="mailto:privacy@picturebox.app"
-          className="text-gold hover:underline"
+          className="text-ember hover:underline"
         >
           privacy@picturebox.app
         </a>
         .
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         Contact
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
         Questions about this policy? Email us at{' '}
-        <a href="mailto:privacy@picturebox.app" className="text-gold hover:underline">
+        <a href="mailto:privacy@picturebox.app" className="text-ember hover:underline">
           privacy@picturebox.app
         </a>
         .

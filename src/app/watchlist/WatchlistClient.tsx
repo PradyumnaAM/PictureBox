@@ -101,7 +101,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-10 flex-wrap">
         <div>
-          <h1 className="font-display text-4xl text-on-surface">My Watchlist</h1>
+          <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-cream">My Watchlist</h1>
           <p className="text-on-surface-variant mt-1">
             {items.length} title{items.length !== 1 ? 's' : ''}
           </p>
@@ -114,7 +114,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
               onClick={() => setFilter(value)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 filter === value
-                  ? 'bg-gold text-black'
+                  ? 'bg-ember text-black'
                   : 'bg-surface-container text-on-surface-variant hover:text-on-surface'
               }`}
             >
@@ -134,7 +134,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
           </p>
           <Link
             href="/films"
-            className="mt-6 bg-gold text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-gold-hover active:scale-95 transition-all"
+            className="mt-6 bg-ember text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-ember-hover active:scale-95 transition-all"
           >
             Browse Films
           </Link>
@@ -179,8 +179,8 @@ export default function WatchlistClient({ items: initialItems }: Props) {
 
                   {/* User rating badge */}
                   {item.rating !== null && (
-                    <div className="absolute bottom-2 left-2 flex items-center gap-0.5 bg-black/60 backdrop-blur-sm text-gold text-[10px] font-semibold px-1.5 py-0.5 rounded z-10">
-                      <Star className="w-2.5 h-2.5 fill-gold stroke-none" />
+                    <div className="absolute bottom-2 left-2 flex items-center gap-0.5 bg-black/60 backdrop-blur-sm text-ember text-[10px] font-semibold px-1.5 py-0.5 rounded z-10">
+                      <Star className="w-2.5 h-2.5 fill-ember stroke-none" />
                       {item.rating}
                     </div>
                   )}
@@ -192,7 +192,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
                       onClick={() => handleMarkWatched(item)}
                       disabled={isLoading}
                       title="Mark as Watched"
-                      className="w-10 h-10 rounded-full bg-gold text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-transform disabled:opacity-50"
+                      className="w-10 h-10 rounded-full bg-ember text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-transform disabled:opacity-50"
                     >
                       <Check size={18} strokeWidth={2.5} />
                     </button>
@@ -210,7 +210,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
 
                 {/* Title + meta */}
                 <Link href={href}>
-                  <p className="font-sans font-semibold text-sm truncate text-on-surface mt-2 hover:text-gold transition-colors">
+                  <p className="font-sans font-semibold text-sm truncate text-on-surface mt-2 hover:text-ember transition-colors">
                     {title.title}
                   </p>
                 </Link>

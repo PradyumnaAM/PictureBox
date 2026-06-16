@@ -7,7 +7,6 @@ import { Film, Star, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import type { Metadata } from 'next'
 
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getPosterUrl, slugify, formatReleaseYear } from '@/lib/tmdb/helpers'
 
 export const metadata: Metadata = {
@@ -92,10 +91,10 @@ function StarDisplay({ rating }: { rating: number }) {
         return (
           <div key={n} className="relative w-3 h-3 flex-shrink-0">
             <Star className="absolute inset-0 w-3 h-3 text-on-surface-variant/25" />
-            {full && <Star className="absolute inset-0 w-3 h-3 fill-gold text-gold" />}
+            {full && <Star className="absolute inset-0 w-3 h-3 fill-ember text-ember" />}
             {half && (
               <Star
-                className="absolute inset-0 w-3 h-3 fill-gold text-gold"
+                className="absolute inset-0 w-3 h-3 fill-ember text-ember"
                 style={{ clipPath: 'inset(0 50% 0 0)' }}
               />
             )}
@@ -124,13 +123,13 @@ function FeedCard({ log }: { log: FeedLog }) {
     <div className="bg-surface-container/60 backdrop-blur border border-white/[0.06] rounded-xl p-5 mb-4">
       {/* User row */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-8 h-8 rounded-full bg-gold text-black text-xs font-bold flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-ember text-black text-xs font-bold flex items-center justify-center flex-shrink-0">
           {getInitial(profile)}
         </div>
         <div className="flex items-center gap-1 flex-wrap text-sm">
           <Link
             href={`/u/${profile.username}`}
-            className="font-semibold text-on-surface hover:text-gold transition-colors"
+            className="font-semibold text-on-surface hover:text-ember transition-colors"
           >
             {profile.display_name ?? profile.username}
           </Link>
@@ -164,7 +163,7 @@ function FeedCard({ log }: { log: FeedLog }) {
         <div className="flex-1 min-w-0">
           <Link
             href={detailHref}
-            className="font-semibold text-sm text-on-surface hover:text-gold transition-colors"
+            className="font-semibold text-sm text-on-surface hover:text-ember transition-colors"
           >
             {title.title}
           </Link>
@@ -215,9 +214,10 @@ export default async function FeedPage() {
     redirect('/sign-in')
   }
 
-  const adminClient = createAdminClient()
+  // RLS client: follows are world-readable, user_logs/profiles policies expose
+  // own + followed/public rows — everything this feed needs without service role.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = adminClient as any
+  const db = supabase as any
 
   // Fetch follows + feed + stats + watching in parallel
   const [
@@ -225,12 +225,12 @@ export default async function FeedPage() {
     { data: statsData },
     { data: watching },
   ] = await Promise.all([
-    admin
+    db
       .from('follows')
       .select('following_id')
       .eq('follower_id', user.id),
-    admin.rpc('get_user_stats', { p_user_id: user.id }),
-    admin
+    db.rpc('get_user_stats', { p_user_id: user.id }),
+    db
       .from('user_logs')
       .select('*, titles(*)')
       .eq('user_id', user.id)
@@ -245,7 +245,7 @@ export default async function FeedPage() {
   )
   const allUserIds = [...followingIds, user.id]
 
-  const { data: feedLogs } = await admin
+  const { data: feedLogs } = await db
     .from('user_logs')
     .select('*, titles(*), profiles:user_id(id, username, display_name, avatar_url)')
     .in('user_id', allUserIds)
@@ -266,7 +266,15 @@ export default async function FeedPage() {
 
             {/* ── Main feed ─────────────────────────────────────────────────── */}
             <main className="lg:col-span-8">
-              <h1 className="font-display text-3xl text-on-surface mb-8">Activity</h1>
+              <header className="mb-10">
+                <p className="flex items-center gap-3 font-label text-label uppercase text-ember mb-3">
+                  <span aria-hidden className="w-6 h-px bg-ember/50" />
+                  The Reel · Live
+                </p>
+                <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-cream leading-none">
+                  Activity
+                </h1>
+              </header>
 
               {/* Empty state — no follows */}
               {!hasFollows && (
@@ -280,7 +288,7 @@ export default async function FeedPage() {
                   </p>
                   <Link
                     href="/members"
-                    className="mt-6 bg-gold text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-gold-hover active:scale-95 transition-all"
+                    className="mt-6 bg-ember text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-ember-hover active:scale-95 transition-all"
                   >
                     Find people to follow
                   </Link>
@@ -307,20 +315,20 @@ export default async function FeedPage() {
                 <h2 className="font-display text-base text-on-surface mb-4">Your Stats</h2>
                 <div className="space-y-4">
                   <div>
-                    <p className="font-display text-2xl text-gold">{stats?.total_movies ?? 0}</p>
-                    <p className="text-on-surface-variant text-xs uppercase tracking-widest mt-0.5">
+                    <p className="font-display text-2xl text-ember">{stats?.total_movies ?? 0}</p>
+                    <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mt-1">
                       Films Watched
                     </p>
                   </div>
                   <div>
-                    <p className="font-display text-2xl text-gold">{stats?.total_episodes ?? 0}</p>
-                    <p className="text-on-surface-variant text-xs uppercase tracking-widest mt-0.5">
+                    <p className="font-display text-2xl text-ember">{stats?.total_episodes ?? 0}</p>
+                    <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mt-1">
                       Episodes Watched
                     </p>
                   </div>
                   <div>
-                    <p className="font-display text-2xl text-gold">{stats?.total_hours ?? 0}h</p>
-                    <p className="text-on-surface-variant text-xs uppercase tracking-widest mt-0.5">
+                    <p className="font-display text-2xl text-ember">{stats?.total_hours ?? 0}h</p>
+                    <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mt-1">
                       Hours Watched
                     </p>
                   </div>
@@ -362,7 +370,7 @@ export default async function FeedPage() {
                             </p>
                             <Link
                               href={href}
-                              className="text-xs text-gold hover:text-gold-hover transition-colors mt-0.5 inline-block"
+                              className="text-xs text-ember hover:text-ember-hover transition-colors mt-0.5 inline-block"
                             >
                               Continue →
                             </Link>
@@ -382,7 +390,7 @@ export default async function FeedPage() {
                 </p>
                 <Link
                   href="/members"
-                  className="text-gold text-sm hover:text-gold-hover transition-colors mt-3 inline-block"
+                  className="text-ember text-sm hover:text-ember-hover transition-colors mt-3 inline-block"
                 >
                   Find people →
                 </Link>

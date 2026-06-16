@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Heart, Plus } from 'lucide-react'
 
 import { getMovie } from '@/lib/tmdb/client'
 import { createClient } from '@/lib/supabase/server'
@@ -14,6 +14,8 @@ import {
   slugify,
 } from '@/lib/tmdb/helpers'
 import LogButton from '@/components/film/LogButton'
+import WatchlistLikeButtons from '@/components/film/WatchlistLikeButtons'
+import ReviewList, { type Review } from '@/components/film/ReviewList'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,14 +28,18 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const id = parseInt(slug.split('-')[0])
-  const movie = await getMovie(id)
-  const backdropUrl = getBackdropUrl(movie.backdrop_path, 'lg')
-  return {
-    title: movie.title,
-    description: movie.overview?.slice(0, 160),
-    openGraph: {
-      images: backdropUrl ? [backdropUrl] : [],
-    },
+  try {
+    const movie = await getMovie(id)
+    const backdropUrl = getBackdropUrl(movie.backdrop_path, 'lg')
+    return {
+      title: movie.title,
+      description: movie.overview?.slice(0, 160),
+      openGraph: {
+        images: backdropUrl ? [backdropUrl] : [],
+      },
+    }
+  } catch {
+    return { title: 'Film not found' }
   }
 }
 
@@ -58,10 +64,72 @@ export default async function FilmPage({ params }: PageProps) {
   const { slug } = await params
   const tmdbId = parseInt(slug.split('-')[0])
 
-  const [movie] = await Promise.all([
-    getMovie(tmdbId),
-    createClient(), // warm session in parallel; session used only for future per-user data
-  ])
+  let movie
+  try {
+    movie = await getMovie(tmdbId)
+  } catch {
+    notFound()
+  }
+
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // ── Per-user data (RLS-scoped): profile country, reviews, own log ─────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  // Resolve the shared title row for this TMDB id so we can find logs/reviews.
+  const { data: titleRow } = await db
+    .from('titles')
+    .select('id')
+    .eq('tmdb_id', tmdbId)
+    .eq('media_type', 'movie')
+    .maybeSingle()
+  const titleId: string | null = (titleRow as { id: string } | null)?.id ?? null
+
+  // Signed-in user's country for streaming-provider region selection.
+  let countryCode = 'US'
+  if (user) {
+    const { data: profile } = await db
+      .from('profiles')
+      .select('country_code')
+      .eq('id', user.id)
+      .maybeSingle()
+    countryCode = (profile as { country_code: string | null } | null)?.country_code || 'US'
+  }
+
+  // Reviews for this title (RLS limits to viewable rows: own + public/followed).
+  let reviews: Review[] = []
+  if (titleId) {
+    const { data: reviewRows } = await db
+      .from('user_logs')
+      .select(
+        'id, rating, review, contains_spoilers, watched_at, created_at, profiles:user_id(username, display_name, avatar_url)',
+      )
+      .eq('title_id', titleId)
+      .not('review', 'is', null)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+    reviews = (reviewRows as Review[] | null) ?? []
+  }
+
+  // The signed-in user's own (non-deleted) log for this title — drives buttons.
+  let myLog: { id: string; status: string; liked: boolean } | null = null
+  if (user && titleId) {
+    const { data: logRow } = await db
+      .from('user_logs')
+      .select('id, status, liked')
+      .eq('user_id', user.id)
+      .eq('title_id', titleId)
+      .is('season_id', null)
+      .is('episode_id', null)
+      .is('deleted_at', null)
+      .maybeSingle()
+    myLog = (logRow as { id: string; status: string; liked: boolean } | null) ?? null
+  }
 
   const backdropUrl = getBackdropUrl(movie.backdrop_path, 'lg')
   const year = formatReleaseYear(movie.release_date)
@@ -72,7 +140,11 @@ export default async function FilmPage({ params }: PageProps) {
     (v) => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'),
   )?.key
 
-  const providers = movie['watch/providers']?.results?.US?.flatrate ?? []
+  // Streaming providers for the user's region, falling back to US.
+  const providerRegions = movie['watch/providers']?.results ?? {}
+  const region =
+    providerRegions[countryCode] ?? providerRegions['US'] ?? null
+  const providers = region?.flatrate ?? []
 
   const cast = movie.credits?.cast.slice(0, 8) ?? []
 
@@ -113,62 +185,62 @@ export default async function FilmPage({ params }: PageProps) {
 
             {/* Left: info + CTAs */}
             <div className="flex-1 min-w-0">
-              {/* Metadata pills */}
-              <div className="flex flex-wrap items-center gap-2 mb-4">
+              {/* Timecode metadata line */}
+              <p className="font-mono text-xs text-cream/80 uppercase tracking-[0.14em] mb-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+                {year && <span>{year}</span>}
+                {movie.runtime > 0 && (
+                  <>
+                    <span className="text-ember">/</span>
+                    <span>{formatRuntime(movie.runtime)}</span>
+                  </>
+                )}
                 {movie.genres?.slice(0, 3).map((g) => (
-                  <span
-                    key={g.id}
-                    className="bg-surface-variant/80 backdrop-blur text-on-surface text-label uppercase border border-white/10 px-2 py-1 rounded"
-                  >
+                  <span key={g.id} className="flex items-center gap-3">
+                    <span className="text-ember">/</span>
                     {g.name}
                   </span>
                 ))}
-                {year && (
-                  <span className="bg-surface-variant/80 backdrop-blur text-on-surface text-label uppercase border border-white/10 px-2 py-1 rounded">
-                    {year}
-                  </span>
-                )}
-                {movie.runtime > 0 && (
-                  <span className="bg-surface-variant/80 backdrop-blur text-on-surface text-label uppercase border border-white/10 px-2 py-1 rounded">
-                    {formatRuntime(movie.runtime)}
-                  </span>
-                )}
-              </div>
+              </p>
 
               {/* Title */}
-              <h1 className="font-display text-4xl md:text-6xl text-white font-bold tracking-tighter mb-2">
+              <h1 className="font-display text-4xl md:text-6xl text-cream font-semibold tracking-tight leading-[1.04] mb-3">
                 {movie.title}
               </h1>
 
               {/* Tagline */}
               {movie.tagline && (
-                <p className="italic text-on-surface-variant text-lg mb-2">{movie.tagline}</p>
+                <p className="font-display italic text-on-surface-variant text-lg mb-2">
+                  {movie.tagline}
+                </p>
               )}
 
               {/* Director */}
               {director && (
-                <p className="text-on-surface-variant text-sm mb-6">
-                  Directed by {director.name}
+                <p className="font-mono text-xs uppercase tracking-[0.14em] text-on-surface-variant mb-6">
+                  Directed by <span className="text-cream">{director.name}</span>
                 </p>
               )}
 
               {/* Action buttons */}
               <div className="flex gap-3 flex-wrap">
-                <LogButton movie={movieMeta} />
-                <button
-                  type="button"
-                  className="bg-surface-container/60 backdrop-blur border border-white/20 text-white font-label uppercase font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-white/10 transition-all active:scale-95"
-                >
-                  <Plus className="w-4 h-4" />
-                  Watchlist
-                </button>
-                <button
-                  type="button"
-                  className="bg-surface-container/60 backdrop-blur border border-white/20 text-white font-label uppercase font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-white/10 transition-all active:scale-95"
-                >
-                  <Heart className="w-4 h-4" />
-                  Like
-                </button>
+                {user && (
+                  <>
+                    <LogButton movie={movieMeta} />
+                    <WatchlistLikeButtons
+                      title={{
+                        tmdb_id: movie.id,
+                        media_type: 'movie',
+                        title: movie.title,
+                        poster_path: movie.poster_path,
+                        release_date: movie.release_date || null,
+                      }}
+                      isLoggedIn={!!user}
+                      initialOnWatchlist={myLog?.status === 'want_to_watch'}
+                      initialLiked={myLog?.liked ?? false}
+                      initialLogId={myLog?.id ?? null}
+                    />
+                  </>
+                )}
                 {trailerKey && (
                   <a
                     href={`https://youtube.com/watch?v=${trailerKey}`}
@@ -180,19 +252,27 @@ export default async function FilmPage({ params }: PageProps) {
                   </a>
                 )}
               </div>
+
+              {!user && (
+                <Link
+                  href="/sign-in"
+                  className="text-on-surface-variant text-sm hover:text-gold transition mt-3 inline-block"
+                >
+                  Sign in to track this film →
+                </Link>
+              )}
             </div>
 
             {/* Right: community rating (desktop only) */}
             <div className="hidden md:block shrink-0">
-              <div className="bg-surface-container/80 backdrop-blur-xl border border-white/10 rounded-xl p-6 min-w-[200px] text-center">
-                <p className="text-[10px] text-on-surface-variant uppercase tracking-widest font-semibold mb-2">
-                  Community Rating
+              <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg p-6 min-w-[200px] text-center">
+                <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mb-2">
+                  Rating
                 </p>
-                <p className="font-display text-5xl font-bold text-gold leading-none">
+                <p className="font-display text-5xl font-semibold text-ember leading-none">
                   {movie.vote_average.toFixed(1)}
-                  <span className="font-sans text-xl text-on-surface-variant font-normal">/10</span>
                 </p>
-                <p className="text-on-surface-variant text-sm mt-1">
+                <p className="font-mono text-[10px] text-on-surface-variant mt-3">
                   {movie.vote_count.toLocaleString()} votes
                 </p>
               </div>
@@ -210,13 +290,13 @@ export default async function FilmPage({ params }: PageProps) {
           <div className="md:col-span-8">
 
             {/* Overview */}
-            <h2 className="font-display text-xl text-on-surface mb-4">Overview</h2>
+            <h2 className="font-display text-2xl text-cream mb-4">Overview</h2>
             <p className="text-on-surface-variant leading-relaxed">{movie.overview}</p>
 
             {/* Cast */}
             {cast.length > 0 && (
               <>
-                <h2 className="font-display text-xl text-on-surface mb-4 mt-10">Cast</h2>
+                <h2 className="font-display text-2xl text-cream mb-4 mt-10">Cast</h2>
                 <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
                   {cast.map((member) => {
                     const photo = getProfileUrl(member.profile_path)
@@ -253,7 +333,7 @@ export default async function FilmPage({ params }: PageProps) {
             {/* Key Crew */}
             {keyCrew.length > 0 && (
               <>
-                <h2 className="font-display text-xl text-on-surface mb-4 mt-10">Crew</h2>
+                <h2 className="font-display text-2xl text-cream mb-4 mt-10">Crew</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {keyCrew.map(({ role, member }) => (
                     <div key={role} className="bg-surface-container rounded-lg p-4">
@@ -268,13 +348,26 @@ export default async function FilmPage({ params }: PageProps) {
             )}
 
             {/* Reviews */}
-            <h2 className="font-display text-xl text-on-surface mb-4 mt-10">Reviews</h2>
-            <div className="bg-surface-container rounded-xl p-8 text-center">
-              <p className="text-on-surface-variant mb-4">No reviews yet. Be the first.</p>
-              <div className="flex justify-center">
-                <LogButton movie={movieMeta} label="Log & Review" />
+            <h2 className="font-display text-2xl text-cream mb-4 mt-10">Reviews</h2>
+            {reviews.length > 0 ? (
+              <ReviewList reviews={reviews} />
+            ) : (
+              <div className="bg-surface-container rounded-xl p-8 text-center">
+                <p className="text-on-surface-variant mb-4">No reviews yet. Be the first.</p>
+                <div className="flex justify-center">
+                  {user ? (
+                    <LogButton movie={movieMeta} label="Log & Review" />
+                  ) : (
+                    <Link
+                      href="/sign-in"
+                      className="text-on-surface-variant text-sm hover:text-gold transition"
+                    >
+                      Sign in to write a review
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
 
@@ -282,7 +375,7 @@ export default async function FilmPage({ params }: PageProps) {
           <div className="md:col-span-4">
 
             {/* Where to Watch */}
-            <h3 className="font-display text-lg text-on-surface mb-4">Where to Watch</h3>
+            <h3 className="font-display text-xl text-cream mb-4">Where to Watch</h3>
             {providers.length > 0 ? (
               <div>
                 {providers.map((provider) => (
@@ -300,7 +393,7 @@ export default async function FilmPage({ params }: PageProps) {
               </div>
             ) : (
               <p className="text-on-surface-variant text-sm">
-                Not currently streaming in the US
+                Not currently streaming in your region
               </p>
             )}
 
@@ -359,7 +452,7 @@ export default async function FilmPage({ params }: PageProps) {
             {/* More Like This */}
             {(movie.similar?.results.length ?? 0) > 0 && (
               <>
-                <h3 className="font-display text-lg text-on-surface mb-4 mt-6">More Like This</h3>
+                <h3 className="font-display text-xl text-cream mb-4 mt-6">More Like This</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {movie.similar!.results.slice(0, 4).map((item) => {
                     const itemTitle = item.title ?? ''
@@ -384,7 +477,7 @@ export default async function FilmPage({ params }: PageProps) {
                             <div className="w-full h-full bg-surface-container" />
                           )}
                         </div>
-                        <p className="text-sm font-medium text-on-surface mt-1 truncate group-hover:text-gold transition-colors">
+                        <p className="text-sm font-medium text-on-surface mt-1 truncate group-hover:text-ember transition-colors">
                           {itemTitle}
                         </p>
                         {itemYear && (

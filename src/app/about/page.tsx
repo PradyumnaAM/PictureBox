@@ -25,7 +25,7 @@ export default function AboutPage() {
 
           {/* ── About ──────────────────────────────────────────────────────── */}
           <section className="mt-10">
-            <h2 className="font-display text-2xl text-on-surface mb-4">What is PictureBox?</h2>
+            <h2 className="font-display text-2xl font-semibold text-cream mb-4">What is PictureBox?</h2>
             <p className="text-on-surface-variant leading-relaxed mb-4">
               PictureBox is a film and TV social tracker built for people who take their watching
               seriously. Log every film, every season, every episode — and see your stats grow in
@@ -47,7 +47,7 @@ export default function AboutPage() {
 
           {/* ── TMDB Attribution (required by TMDB API ToS) ────────────────── */}
           <section className="mt-10">
-            <h2 className="font-display text-2xl text-on-surface mb-4">Data &amp; Images</h2>
+            <h2 className="font-display text-2xl font-semibold text-cream mb-4">Data &amp; Images</h2>
 
             <div className="flex items-center gap-4 mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -66,7 +66,7 @@ export default function AboutPage() {
                 href="https://www.themoviedb.org"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gold hover:underline"
+                className="text-ember hover:underline"
               >
                 The Movie Database (TMDB)
               </a>
@@ -81,13 +81,13 @@ export default function AboutPage() {
 
           {/* ── Contact ────────────────────────────────────────────────────── */}
           <section className="mt-10">
-            <h2 className="font-display text-2xl text-on-surface mb-4">Get in Touch</h2>
+            <h2 className="font-display text-2xl font-semibold text-cream mb-4">Get in Touch</h2>
             <p className="text-on-surface-variant leading-relaxed mb-3">
               For support, feedback, or press inquiries:
             </p>
             <a
               href="mailto:hello@picturebox.app"
-              className="text-gold hover:underline text-lg"
+              className="text-ember hover:underline text-lg"
             >
               hello@picturebox.app
             </a>
@@ -97,13 +97,13 @@ export default function AboutPage() {
 
           {/* ── Legal links ────────────────────────────────────────────────── */}
           <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
-            <Link href="/privacy" className="text-on-surface-variant text-sm hover:text-gold transition-colors">
+            <Link href="/privacy" className="text-on-surface-variant text-sm hover:text-ember transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-on-surface-variant text-sm hover:text-gold transition-colors">
+            <Link href="/terms" className="text-on-surface-variant text-sm hover:text-ember transition-colors">
               Terms of Service
             </Link>
-            <Link href="/cookies" className="text-on-surface-variant text-sm hover:text-gold transition-colors">
+            <Link href="/cookies" className="text-on-surface-variant text-sm hover:text-ember transition-colors">
               Cookie Policy
             </Link>
           </div>

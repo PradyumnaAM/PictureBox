@@ -1,23 +1,16 @@
 'use client'
 
 import { useRef } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
-import { Bookmark, ChevronLeft, ChevronRight, Film, Star } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 
-import { slugify, formatReleaseYear, getPosterUrl } from '@/lib/tmdb/helpers'
+import PosterCard, { type PosterItem } from './PosterCard'
+
+// Re-exported so existing `import { PosterItem } from '.../PosterRow'` keeps working.
+export type { PosterItem }
 
 // 3 cards × (208 px card + 24 px gap) = 696 px per arrow click
 const SCROLL_AMOUNT = 696
-
-export interface PosterItem {
-  id: number
-  title: string
-  poster_path: string | null
-  release_date: string
-  vote_average: number
-  genre_names: string[]
-}
 
 interface PosterRowProps {
   title: string
@@ -58,16 +51,21 @@ export default function PosterRow({
 
   return (
     <div className="max-w-page mx-auto">
-      {/* Section header */}
-      <div className="flex items-center justify-between mb-6 px-4 md:px-16">
-        <div className="border-l-2 border-gold pl-4">
-          <h2 className="font-display text-headline text-on-surface">{title}</h2>
-        </div>
+      {/* Section header — editorial: title, rule line, reel count */}
+      <div className="flex items-baseline gap-5 mb-7 px-4 md:px-16">
+        <h2 className="font-display text-headline md:text-3xl text-cream shrink-0">
+          {title}
+        </h2>
+        <span aria-hidden className="hidden sm:block flex-1 h-px bg-white/[0.08] translate-y-[-4px]" />
+        <span className="hidden sm:block font-mono text-xs text-outline shrink-0">
+          {String(items.length).padStart(2, '0')} titles
+        </span>
         <Link
           href={href}
-          className="text-label uppercase tracking-widest text-on-surface-variant hover:text-gold transition-colors"
+          className="group flex items-center gap-1.5 font-label text-label uppercase text-on-surface-variant hover:text-ember transition-colors shrink-0"
         >
           See All
+          <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
 
@@ -78,7 +76,7 @@ export default function PosterRow({
           type="button"
           onClick={handleScrollLeft}
           aria-label="Scroll left"
-          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-surface-container/90 backdrop-blur border border-white/10 flex items-center justify-center text-on-surface hover:bg-gold hover:text-black hover:border-gold transition-all duration-200 active:scale-95"
+          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-md bg-surface-container/90 backdrop-blur border border-white/10 flex items-center justify-center text-on-surface hover:bg-ember hover:text-background hover:border-ember transition-all duration-200 active:scale-95"
         >
           <ChevronLeft size={20} />
         </button>
@@ -88,71 +86,16 @@ export default function PosterRow({
           ref={scrollRef}
           className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth px-14 pb-4"
         >
-          {items.map((item) => {
-            const posterUrl = getPosterUrl(item.poster_path, 'md')
-            const year = formatReleaseYear(item.release_date)
-            const rating = item.vote_average
-            const slug = slugify(item.id, item.title)
-
-            return (
-              <Link
-                key={item.id}
-                href={`${linkPrefix}/${slug}`}
-                className="flex-none w-52 snap-start group cursor-pointer"
-              >
-                {/* Poster image */}
-                <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2 group-hover:-translate-y-2 group-hover:shadow-gold-glow transition-all duration-500">
-                  {posterUrl ? (
-                    <Image
-                      src={posterUrl}
-                      alt={item.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      sizes="208px"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-surface-container flex items-center justify-center">
-                      <Film className="w-10 h-10 text-outline" />
-                    </div>
-                  )}
-
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-poster-overlay" />
-
-                  {/* Bookmark — appears on hover */}
-                  <div
-                    aria-hidden
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  >
-                    <Bookmark className="w-3.5 h-3.5 text-white" />
-                  </div>
-
-                  {/* Bottom: year + star rating */}
-                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-1">
-                    {year && (
-                      <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
-                        {year}
-                      </span>
-                    )}
-                    {rating > 0 && (
-                      <span className="flex items-center gap-0.5 bg-black/60 backdrop-blur-sm text-gold text-[10px] font-semibold px-1.5 py-0.5 rounded">
-                        <Star className="w-2.5 h-2.5 fill-gold stroke-none" />
-                        {rating.toFixed(1)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Title + meta below poster */}
-                <p className="font-sans font-semibold text-sm truncate text-on-surface group-hover:text-gold transition-colors">
-                  {item.title}
-                </p>
-                <p className="text-on-surface-variant text-xs mt-0.5 truncate">
-                  {[year, item.genre_names[0]].filter(Boolean).join(' • ')}
-                </p>
-              </Link>
-            )
-          })}
+          {items.map((item, index) => (
+            <PosterCard
+              key={item.id}
+              item={item}
+              index={index}
+              linkPrefix={linkPrefix}
+              className="flex-none w-52 snap-start"
+              sizes="208px"
+            />
+          ))}
         </div>
 
         {/* Edge fade masks — above cards (z-5), below arrows (z-10) */}
@@ -164,7 +107,7 @@ export default function PosterRow({
           type="button"
           onClick={handleScrollRight}
           aria-label="Scroll right"
-          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-surface-container/90 backdrop-blur border border-white/10 flex items-center justify-center text-on-surface hover:bg-gold hover:text-black hover:border-gold transition-all duration-200 active:scale-95"
+          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-md bg-surface-container/90 backdrop-blur border border-white/10 flex items-center justify-center text-on-surface hover:bg-ember hover:text-background hover:border-ember transition-all duration-200 active:scale-95"
         >
           <ChevronRight size={20} />
         </button>

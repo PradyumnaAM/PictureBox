@@ -69,11 +69,11 @@ function StarRating({
             {/* Background star */}
             <Star className="absolute inset-0 w-8 h-8 text-on-surface-variant/30" />
             {/* Full fill */}
-            {full && <Star className="absolute inset-0 w-8 h-8 fill-gold text-gold" />}
+            {full && <Star className="absolute inset-0 w-8 h-8 fill-ember text-ember" />}
             {/* Half fill */}
             {half && (
               <Star
-                className="absolute inset-0 w-8 h-8 fill-gold text-gold"
+                className="absolute inset-0 w-8 h-8 fill-ember text-ember"
                 style={{ clipPath: 'inset(0 50% 0 0)' }}
               />
             )}
@@ -121,7 +121,7 @@ function Toggle({
         onClick={() => onChange(!checked)}
         className={cn(
           'w-5 h-5 rounded border-2 flex items-center justify-center transition-colors shrink-0',
-          checked ? 'bg-gold border-gold' : 'border-outline-variant',
+          checked ? 'bg-ember border-ember' : 'border-outline-variant',
         )}
       >
         {checked && <Check className="w-3 h-3 text-black" />}
@@ -138,7 +138,7 @@ const today = new Date().toISOString().split('T')[0]
 const inputClass =
   'w-full bg-surface-container-high border border-outline-variant rounded-md px-4 py-3 ' +
   'text-on-surface placeholder:text-on-surface-variant ' +
-  'focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors'
+  'focus:outline-none focus:border-ember focus:ring-1 focus:ring-ember transition-colors'
 
 export default function LogModal({
   isOpen,
@@ -233,7 +233,7 @@ export default function LogModal({
               </div>
             )}
             <div>
-              <h2 className="font-display text-lg text-on-surface font-bold leading-tight">
+              <h2 className="font-display text-xl text-cream font-semibold leading-tight">
                 {movie.title}
               </h2>
               <p className="text-on-surface-variant text-sm">
@@ -264,8 +264,8 @@ export default function LogModal({
                   className={cn(
                     'px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                     status === value
-                      ? 'bg-gold text-black'
-                      : 'bg-surface-container-high border border-outline-variant text-on-surface-variant hover:border-gold/50',
+                      ? 'bg-ember text-black'
+                      : 'bg-surface-container-high border border-outline-variant text-on-surface-variant hover:border-ember/50',
                   )}
                 >
                   {label}
@@ -348,7 +348,7 @@ export default function LogModal({
               'w-full font-label uppercase font-bold py-3 rounded-md transition-all flex items-center justify-center gap-2',
               saved
                 ? 'bg-green-600 text-white cursor-not-allowed'
-                : 'bg-gold text-black hover:bg-gold-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
+                : 'bg-ember text-black hover:bg-ember-hover active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             {saved ? (

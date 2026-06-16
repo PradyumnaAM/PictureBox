@@ -40,7 +40,7 @@ type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken'
 const input =
   'w-full bg-surface-container-high border border-outline-variant rounded-md px-4 py-3 ' +
   'text-on-surface placeholder:text-on-surface-variant ' +
-  'focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors'
+  'focus:outline-none focus:border-ember focus:ring-1 focus:ring-ember transition-colors'
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +91,24 @@ export default function SignUpPage() {
   // ── Submit ─────────────────────────────────────────────────────────────────
   const onSubmit = async (data: FormData) => {
     setServerError(null)
+
+    // Respect the availability checker so the user actually gets the handle they
+    // chose (the DB trigger would otherwise silently suffix a taken username).
+    if (usernameStatus === 'checking') {
+      setServerError('Still checking username availability — please wait a moment.')
+      return
+    }
+    if (usernameStatus === 'taken') {
+      form.setError('username', { type: 'manual', message: 'This username is already taken' })
+      setServerError('That username is already taken. Please choose another.')
+      return
+    }
+    if (usernameStatus !== 'available') {
+      form.setError('username', { type: 'manual', message: 'Please choose a valid, available username' })
+      setServerError('Please choose a valid, available username.')
+      return
+    }
+
     const supabase = createClient()
     const { error } = await supabase.auth.signUp({
       email: data.email,
@@ -109,8 +127,8 @@ export default function SignUpPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <p className="font-display text-2xl text-gold mb-1">PictureBox</p>
-          <h1 className="text-xl font-semibold text-on-surface mb-1">Create your account</h1>
+          <p className="font-label text-label uppercase text-ember mb-3">Members Only</p>
+          <h1 className="font-display text-[1.75rem] font-semibold text-cream mb-1.5">Create your account</h1>
           <p className="text-on-surface-variant text-sm">Join the discerning curators.</p>
         </div>
 
@@ -238,8 +256,8 @@ export default function SignUpPage() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={form.formState.isSubmitting}
-            className="w-full bg-gold text-black font-label uppercase font-bold py-3 rounded-md hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            disabled={form.formState.isSubmitting || usernameStatus !== 'available'}
+            className="w-full bg-ember text-black font-label uppercase font-bold py-3 rounded-md hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {form.formState.isSubmitting ? (
               <>
@@ -256,7 +274,7 @@ export default function SignUpPage() {
         <div className="mt-6 space-y-4">
           <p className="text-center text-sm text-on-surface-variant">
             Already have an account?{' '}
-            <Link href="/sign-in" className="text-gold hover:text-gold/80 transition-colors">
+            <Link href="/sign-in" className="text-ember hover:text-ember/80 transition-colors">
               Sign in
             </Link>
           </p>

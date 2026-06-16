@@ -105,7 +105,7 @@ export default function AddToGroupSearch({ groupId }: Props) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for a film or TV show to add…"
-          className="w-full bg-surface-container border border-white/10 rounded-xl pl-10 pr-10 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-gold/50 transition-colors"
+          className="w-full bg-surface-container border border-white/10 rounded-xl pl-10 pr-10 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-ember/50 transition-colors"
         />
         {searching && (
           <Loader2
@@ -150,7 +150,7 @@ export default function AddToGroupSearch({ groupId }: Props) {
                 </div>
                 <div className="flex-shrink-0">
                   {isAdding ? (
-                    <Loader2 size={16} className="text-gold animate-spin" />
+                    <Loader2 size={16} className="text-ember animate-spin" />
                   ) : (
                     <Plus size={16} className="text-on-surface-variant" />
                   )}

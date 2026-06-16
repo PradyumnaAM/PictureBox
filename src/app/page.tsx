@@ -1,12 +1,48 @@
-import { getGenres, getMovie, getPopularMovies, getTrending } from '@/lib/tmdb/client'
+import type { Metadata } from 'next'
 
+import { getGenres, getMovie, getPopularMovies, getTrending } from '@/lib/tmdb/client'
+import { createClient } from '@/lib/supabase/server'
+import type { TMDBSearchResult } from '@/types/tmdb'
+
+import LandingPage from '@/components/landing/LandingPage'
 import HeroCarousel from '@/components/home/HeroCarousel'
 import PosterRow, { type PosterItem } from '@/components/home/PosterRow'
-import WhySection from '@/components/home/WhySection'
 import Footer from '@/components/layout/Footer'
 
+export const metadata: Metadata = {
+  title: 'PictureBox — Track every film and every episode',
+  description:
+    'The watch diary built for 2026. Log films in five seconds, track TV down to the episode, and find your next watch through friends — not algorithms. Free forever.',
+}
+
 export default async function HomePage() {
-  // Four independent fetches in parallel
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // ── Logged out → marketing landing page ────────────────────────────────
+  if (!user) {
+    const [trendingMovies, trendingTV] = await Promise.all([
+      getTrending('movie', 'day'),
+      getTrending('tv', 'week'),
+    ])
+
+    // Interleave movies and TV so the wall and ticker mix both.
+    const allTitles: TMDBSearchResult[] = []
+    const maxLen = Math.max(trendingMovies.length, trendingTV.length)
+    for (let i = 0; i < maxLen; i++) {
+      if (trendingMovies[i]) allTitles.push(trendingMovies[i])
+      if (trendingTV[i]) allTitles.push(trendingTV[i])
+    }
+
+    const posterTitles = allTitles.filter((t) => t.poster_path).slice(0, 12)
+    const tickerTitles = allTitles.filter((t) => t.title ?? t.name).slice(0, 10)
+
+    return <LandingPage posters={posterTitles} tickerItems={tickerTitles} />
+  }
+
+  // ── Logged in → browse home ─────────────────────────────────────────────
   const [trendingMovies, popularMoviesData, trendingTV, allGenres] = await Promise.all([
     getTrending('movie', 'day'),
     getPopularMovies(),
@@ -16,12 +52,10 @@ export default async function HomePage() {
 
   const genreMap = new Map(allGenres.map((g) => [g.id, g.name]))
 
-  // Hero carousel: full movie details for the top 5 trending films
   const heroFilms = await Promise.all(
     trendingMovies.slice(0, 5).map((f) => getMovie(f.id)),
   )
 
-  // Transform search results into PosterItem shape (genre IDs → names)
   const toItems = (results: typeof trendingMovies): PosterItem[] =>
     results.map((r) => ({
       id: r.id,
@@ -43,24 +77,13 @@ export default async function HomePage() {
       <HeroCarousel films={heroFilms} />
 
       <section className="py-12 md:py-16">
-        <PosterRow
-          title="In Theaters"
-          items={theaterItems}
-          href="/films"
-          linkPrefix="/film"
-        />
+        <PosterRow title="In Theaters" items={theaterItems} href="/films" linkPrefix="/film" />
       </section>
 
       <section className="py-12 md:py-16 bg-surface-container-lowest/60">
-        <PosterRow
-          title="Trending TV"
-          items={tvItems}
-          href="/tv"
-          linkPrefix="/tv"
-        />
+        <PosterRow title="Trending TV" items={tvItems} href="/tv" linkPrefix="/tv" />
       </section>
 
-      <WhySection />
       <Footer />
     </>
   )

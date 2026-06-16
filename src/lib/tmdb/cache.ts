@@ -3,6 +3,9 @@ import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { MediaType, TMDBMovie, TMDBTVShow } from '@/types/tmdb'
 
+// Note: the TMDB detail fetch is injected by callers (e.g. /api/logs passes
+// getMovie / getTVShow) so this cache module stays decoupled from the client.
+
 // Mirrors the public.titles table row shape.
 // Replace with the generated Database type once `supabase gen types` is run.
 export interface TitleRow {
@@ -165,4 +168,108 @@ export async function getOrFetchTitle(
 
   const fresh = await fetchFn()
   return upsertTitle(fresh, mediaType)
+}
+
+// ----------------------------------------------------------------------------
+// Logging-time cache
+// ----------------------------------------------------------------------------
+
+/**
+ * True when a cached title row is missing the rich fields that stats depend on
+ * (runtime, genres, cast_crew with a crew array). Such rows were typically
+ * written by an early "minimal" log path and need a refresh from TMDB.
+ */
+function isTitleMissingRichData(row: TitleRow): boolean {
+  const genres = row.genres as unknown[] | null | undefined
+  const castCrew = row.cast_crew as { crew?: unknown[] } | null | undefined
+
+  const hasRuntime = row.runtime != null
+  const hasGenres = Array.isArray(genres) && genres.length > 0
+  const hasCrew = Array.isArray(castCrew?.crew) && castCrew!.crew!.length > 0
+
+  return !hasRuntime || !hasGenres || !hasCrew
+}
+
+/**
+ * Ensure a title is cached with the FULL set of fields that stats rely on:
+ * runtime, genres (jsonb array) and cast_crew (jsonb with a `crew` array that
+ * includes Director jobs), alongside poster/title/release_date/overview.
+ *
+ * This is the function the /api/logs route should use instead of writing a
+ * minimal title row. It fetches the full TMDB detail (credits included) and
+ * upserts it via `upsertTitle`, so every freshly-logged title is immediately
+ * usable for total-hours / favourite-genre / favourite-director stats.
+ *
+ * Behaviour:
+ *  - If a fresh, complete row is already cached, it is returned as-is (no fetch).
+ *  - If the row exists but is missing runtime/genres/cast_crew, it is refreshed.
+ *  - If TMDB is unreachable, we fall back to whatever is already cached (or, if
+ *    nothing is cached, to a minimal upsert from `fallback`) so logging never
+ *    fails just because the detail fetch did. We never overwrite an existing
+ *    non-empty row with a blank one.
+ *
+ * `fetchDetail` is injected so this module stays decoupled from the TMDB
+ * client; pass `getMovie` / `getTVShow` from '@/lib/tmdb/client'.
+ */
+export async function cacheTitleOnLog(opts: {
+  tmdbId: number
+  mediaType: MediaType
+  fetchDetail: (id: number) => Promise<TMDBMovie | TMDBTVShow>
+  fallback?: {
+    title?: string | null
+    poster_path?: string | null
+    release_date?: string | null
+    overview?: string | null
+  }
+}): Promise<TitleRow> {
+  const { tmdbId, mediaType, fetchDetail, fallback } = opts
+
+  const cached = await getCachedTitle(tmdbId, mediaType)
+
+  // A cached row with all the rich fields is good enough — reuse it.
+  if (cached && !isTitleMissingRichData(cached)) {
+    return cached
+  }
+
+  // Otherwise fetch full details from TMDB and upsert the complete row.
+  try {
+    const fresh = await fetchDetail(tmdbId)
+    return await upsertTitle(fresh, mediaType)
+  } catch (err) {
+    console.error(
+      `[cache] cacheTitleOnLog: TMDB detail fetch failed for tmdb_id=${tmdbId} (${mediaType}):`,
+      err instanceof Error ? err.message : err,
+    )
+
+    // Detail fetch failed. Never destroy good data: if we already have a row,
+    // keep it. Only as a last resort write a minimal row from the fallback so
+    // the log can reference a title at all.
+    if (cached) return cached
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = createAdminClient() as any
+    const { data, error } = await db
+      .from('titles')
+      .upsert(
+        {
+          tmdb_id: tmdbId,
+          media_type: mediaType,
+          title: fallback?.title ?? '',
+          poster_path: fallback?.poster_path ?? null,
+          release_date: fallback?.release_date || null,
+          overview: fallback?.overview ?? null,
+        },
+        { onConflict: 'tmdb_id,media_type' },
+      )
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(
+        `Failed to upsert fallback title tmdb_id=${tmdbId}: ${error.message}`,
+      )
+    }
+
+    return data as TitleRow
+  }
 }

@@ -1,9 +1,33 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 
 const USERNAME_RE = /^[a-z0-9_]{3,30}$/i
+
+export async function GET() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from('profiles')
+    .select('username, display_name')
+    .eq('id', user.id)
+    .single()
+
+  if (error) {
+    console.error('[GET /api/user/profile] DB error:', error.code, error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ profile: data })
+}
 
 export async function PATCH(req: NextRequest) {
   const supabase = await createClient()
@@ -60,6 +84,14 @@ export async function PATCH(req: NextRequest) {
     patch.streaming_services = body.streaming_services
   }
 
+  if ('favorite_genres' in body) {
+    const v = body.favorite_genres
+    if (!Array.isArray(v)) {
+      return NextResponse.json({ error: 'favorite_genres must be an array' }, { status: 400 })
+    }
+    patch.favorite_genres = v
+  }
+
   if ('profile_public' in body) {
     patch.profile_public = body.profile_public
   }
@@ -72,16 +104,21 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
   }
 
-  const admin = createAdminClient()
+  // RLS client: profiles_update policy restricts the update to the user's own
+  // row, so no service-role bypass is needed here.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin as any)
+  const { error } = await (supabase as any)
     .from('profiles')
     .update(patch)
     .eq('id', user.id)
 
   if (error) {
+    console.error('[PATCH /api/user/profile] DB error:', error.code, error.message)
     if (error.code === '23505') {
       return NextResponse.json({ error: 'Username is already taken' }, { status: 409 })
+    }
+    if (error.code === '42501') {
+      return NextResponse.json({ error: 'Missing database grant — apply the fix_role_grants migration in the Supabase SQL editor.' }, { status: 500 })
     }
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

@@ -8,9 +8,32 @@ import { toast } from 'sonner'
 export default function DangerZone() {
   const router = useRouter()
   const [deleting, setDeleting] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
-  const handleExport = () => {
-    toast.info('Data export coming soon.')
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const res = await fetch('/api/user/export')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        toast.error((data as { error?: string }).error ?? 'Failed to export data.')
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'picturebox-export.json'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast.success('Your data is downloading.')
+    } catch {
+      toast.error('Something went wrong. Please try again.')
+    } finally {
+      setExporting(false)
+    }
   }
 
   const handleDelete = async () => {
@@ -58,9 +81,10 @@ export default function DangerZone() {
           <button
             type="button"
             onClick={handleExport}
-            className="flex-shrink-0 border border-white/20 text-on-surface text-sm font-medium px-4 py-2 rounded-lg hover:border-white/40 hover:bg-white/5 transition-all active:scale-95"
+            disabled={exporting}
+            className="flex-shrink-0 border border-white/20 text-on-surface text-sm font-medium px-4 py-2 rounded-lg hover:border-white/40 hover:bg-white/5 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Export data
+            {exporting ? 'Exporting…' : 'Export data'}
           </button>
         </div>
 

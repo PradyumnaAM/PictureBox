@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Check, ChevronDown, Star, Tv } from 'lucide-react'
+import { toast } from 'sonner'
 
 import type { TMDBSeason, TMDBSeasonSummary } from '@/types/tmdb'
 import { getPosterUrl, getStillUrl } from '@/lib/tmdb/helpers'
@@ -27,6 +28,46 @@ export default function SeasonAccordion({
   const [loadingSet, setLoadingSet] = useState<Set<number>>(new Set())
   const [watchedEpisodes, setWatchedEpisodes] = useState<Set<number>>(new Set())
   const [ratingsMap, setRatingsMap] = useState<Map<number, number>>(new Map())
+
+  // ── Restore saved progress + ratings on load ──────────────────────────────
+  // Watched state and ratings are keyed by the TMDB episode id (episode.id),
+  // matching the rest of this component. The GET only returns non-deleted logs,
+  // so the checkbox state mirrors deleted_at IS NULL rows.
+  useEffect(() => {
+    let cancelled = false
+    async function loadProgress() {
+      try {
+        const res = await fetch(`/api/logs/episode?tmdbId=${showId}`)
+        if (!res.ok) return
+        const { logs } = (await res.json()) as {
+          logs: Array<{
+            season_number: number
+            episode_number: number
+            episode_tmdb_id: number | null
+            watched: boolean
+            rating: number | null
+          }>
+        }
+        if (cancelled || !Array.isArray(logs)) return
+
+        const nextWatched = new Set<number>()
+        const nextRatings = new Map<number, number>()
+        for (const log of logs) {
+          if (log.episode_tmdb_id == null) continue
+          if (log.watched) nextWatched.add(log.episode_tmdb_id)
+          if (log.rating != null) nextRatings.set(log.episode_tmdb_id, log.rating)
+        }
+        setWatchedEpisodes(nextWatched)
+        setRatingsMap(nextRatings)
+      } catch {
+        // Non-fatal: leave progress empty if it can't be loaded.
+      }
+    }
+    void loadProgress()
+    return () => {
+      cancelled = true
+    }
+  }, [showId])
 
   async function fetchSeason(seasonNumber: number) {
     setLoadingSet((prev) => new Set(prev).add(seasonNumber))
@@ -61,6 +102,7 @@ export default function SeasonAccordion({
     episodeId: number,
     seasonNum: number,
     epNum: number,
+    runtime: number | null,
   ) {
     const isWatched = watchedEpisodes.has(episodeId)
 
@@ -94,6 +136,7 @@ export default function SeasonAccordion({
             season_number: seasonNum,
             episode_number: epNum,
             episode_tmdb_id: episodeId,
+            runtime,
           }),
         })
         if (!res.ok) throw new Error('Failed')
@@ -106,6 +149,7 @@ export default function SeasonAccordion({
         else next.delete(episodeId)
         return next
       })
+      toast.error("Couldn't save that episode. Please try again.")
     }
   }
 
@@ -136,6 +180,7 @@ export default function SeasonAccordion({
           episodes: data.episodes.map((e) => ({
             episode_id: e.id,
             episode_number: e.episode_number,
+            runtime: e.runtime ?? null,
           })),
         }),
       })
@@ -148,11 +193,47 @@ export default function SeasonAccordion({
         else episodeIds.forEach((id) => next.delete(id))
         return next
       })
+      toast.error("Couldn't update the season. Please try again.")
     }
   }
 
-  function rateEpisode(episodeId: number, rating: number) {
+  async function rateEpisode(
+    episodeId: number,
+    seasonNum: number,
+    epNum: number,
+    rating: number,
+    runtime: number | null,
+  ) {
+    const prevRating = ratingsMap.get(episodeId)
+
+    // Optimistic update — also reflect that rating implies watched.
     setRatingsMap((prev) => new Map(prev).set(episodeId, rating))
+    setWatchedEpisodes((prev) => new Set(prev).add(episodeId))
+
+    try {
+      const res = await fetch('/api/logs/episode', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tmdb_show_id: showId,
+          season_number: seasonNum,
+          episode_number: epNum,
+          episode_tmdb_id: episodeId,
+          rating,
+          runtime,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed')
+    } catch {
+      // Revert the rating on error (leave watched state as-is).
+      setRatingsMap((prev) => {
+        const next = new Map(prev)
+        if (prevRating === undefined) next.delete(episodeId)
+        else next.set(episodeId, prevRating)
+        return next
+      })
+      toast.error("Couldn't save your rating. Please try again.")
+    }
   }
 
   return (
@@ -227,7 +308,7 @@ export default function SeasonAccordion({
                   <button
                     type="button"
                     onClick={() => void markAllWatched(season.season_number)}
-                    className="text-xs font-medium text-gold border border-gold/40 hover:bg-gold/10 px-3 py-1 rounded-full transition-colors"
+                    className="text-xs font-medium text-ember border border-ember/40 hover:bg-ember/10 px-3 py-1 rounded-full transition-colors"
                   >
                     {allWatched ? 'Unmark all' : 'Mark all watched'}
                   </button>
@@ -254,7 +335,7 @@ export default function SeasonAccordion({
                 </div>
                 <div className="bg-surface-variant rounded-full h-1">
                   <div
-                    className="bg-gold rounded-full h-1 transition-all duration-300"
+                    className="bg-ember rounded-full h-1 transition-all duration-300"
                     style={{
                       width: `${totalCount > 0 ? (watchedCount / totalCount) * 100 : 0}%`,
                     }}
@@ -311,17 +392,18 @@ export default function SeasonAccordion({
                             episode.id,
                             season.season_number,
                             episode.episode_number,
+                            episode.runtime ?? null,
                           )
                         }
                         aria-label={isWatched ? 'Mark as unwatched' : 'Mark as watched'}
                         className="flex-shrink-0"
                       >
                         {isWatched ? (
-                          <div className="w-5 h-5 rounded bg-gold border-2 border-gold flex items-center justify-center">
+                          <div className="w-5 h-5 rounded bg-ember border-2 border-ember flex items-center justify-center">
                             <Check size={12} className="text-black" strokeWidth={3} />
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded border-2 border-outline-variant hover:border-gold transition-colors" />
+                          <div className="w-5 h-5 rounded border-2 border-outline-variant hover:border-ember transition-colors" />
                         )}
                       </button>
 
@@ -349,7 +431,7 @@ export default function SeasonAccordion({
 
                       {/* Episode info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-on-surface font-medium text-sm truncate group-hover:text-gold transition-colors">
+                        <p className="text-on-surface font-medium text-sm truncate group-hover:text-ember transition-colors">
                           {episode.name}
                         </p>
                         {meta && (
@@ -363,14 +445,22 @@ export default function SeasonAccordion({
                           <button
                             key={star}
                             type="button"
-                            onClick={() => rateEpisode(episode.id, star)}
+                            onClick={() =>
+                              void rateEpisode(
+                                episode.id,
+                                season.season_number,
+                                episode.episode_number,
+                                star,
+                                episode.runtime ?? null,
+                              )
+                            }
                             aria-label={`Rate ${star} stars`}
-                            className="text-on-surface-variant hover:text-gold transition-colors"
+                            className="text-on-surface-variant hover:text-ember transition-colors"
                           >
                             <Star
                               size={14}
                               className={
-                                star <= rating ? 'fill-gold text-gold' : 'fill-none'
+                                star <= rating ? 'fill-ember text-ember' : 'fill-none'
                               }
                             />
                           </button>

@@ -3,7 +3,6 @@ import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
-import { createAdminClient } from '@/lib/supabase/admin'
 import FollowButton from '@/components/profile/FollowButton'
 import Footer from '@/components/layout/Footer'
 
@@ -39,20 +38,20 @@ export default async function MembersPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const admin = createAdminClient()
+  // RLS client: profiles_select exposes public profiles (plus self/followed),
+  // which is exactly what a member directory should list.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adminAny = admin as any
+  const db = supabase as any
 
   const [{ data: membersData }, { data: myFollowsData }] = await Promise.all([
-    adminAny
+    db
       .from('profiles')
       .select('*')
-      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(20),
     // Fetch all IDs the current user already follows (one query, no N+1)
     user
-      ? adminAny
+      ? db
           .from('follows')
           .select('following_id')
           .eq('follower_id', user.id)
@@ -70,7 +69,7 @@ export default async function MembersPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-16">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl text-on-surface">Discover People</h1>
+            <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream">Discover People</h1>
             <p className="text-on-surface-variant mt-1">
               Find friends and fellow cinephiles.
             </p>
@@ -98,14 +97,14 @@ export default async function MembersPage() {
                       href={`/u/${member.username}`}
                       className="flex items-center gap-3 group"
                     >
-                      <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center flex-shrink-0">
-                        <span className="font-display text-lg font-bold text-black">
+                      <div className="w-10 h-10 rounded-full bg-ember flex items-center justify-center flex-shrink-0">
+                        <span className="font-display text-lg font-semibold text-black">
                           {initial}
                         </span>
                       </div>
                       <div className="min-w-0">
                         {member.display_name && (
-                          <p className="text-sm font-semibold text-on-surface truncate group-hover:text-gold transition-colors">
+                          <p className="text-sm font-semibold text-on-surface truncate group-hover:text-ember transition-colors">
                             {member.display_name}
                           </p>
                         )}

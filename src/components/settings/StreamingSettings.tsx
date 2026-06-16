@@ -9,14 +9,14 @@ import { cn } from '@/lib/utils'
 import type { Profile } from '@/app/settings/page'
 
 const SERVICES = [
-  { id: 8,    name: 'Netflix',      logo: 'https://image.tmdb.org/t/p/original/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg' },
-  { id: 119,  name: 'Amazon Prime', logo: 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg' },
-  { id: 337,  name: 'Disney+',      logo: 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19d.jpg' },
-  { id: 1899, name: 'HBO Max',      logo: 'https://image.tmdb.org/t/p/original/Ajqyt5aNxNvaG0sDlXd3tP5t0MQ.jpg' },
-  { id: 350,  name: 'Apple TV+',   logo: 'https://image.tmdb.org/t/p/original/4KAy34EHvRM25Ih8wb82AJE7gS5.jpg' },
-  { id: 15,   name: 'Hulu',        logo: 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg' },
-  { id: 386,  name: 'Peacock',     logo: 'https://image.tmdb.org/t/p/original/8VCV78prwd9QzZnEm0ReO6bERDa.jpg' },
-  { id: 531,  name: 'Paramount+',  logo: 'https://image.tmdb.org/t/p/original/h5DcR0J2EESLitnhR8xLG1QymTE.jpg' },
+  { id: 8,    name: 'Netflix',      logo: 'https://image.tmdb.org/t/p/w92/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg' },
+  { id: 9,    name: 'Amazon Prime', logo: 'https://image.tmdb.org/t/p/w92/pvske1MyAoymrs5bguRfVqYiM9a.jpg' },
+  { id: 337,  name: 'Disney+',      logo: 'https://image.tmdb.org/t/p/w92/97yvRBw1GzX7fXprcF80er19ot.jpg' },
+  { id: 1899, name: 'HBO Max',      logo: 'https://image.tmdb.org/t/p/w92/jbe4gVSfRlbPTdESXhEKpornsfu.jpg' },
+  { id: 350,  name: 'Apple TV+',   logo: 'https://image.tmdb.org/t/p/w92/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg' },
+  { id: 15,   name: 'Hulu',        logo: 'https://image.tmdb.org/t/p/w92/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg' },
+  { id: 386,  name: 'Peacock',     logo: 'https://image.tmdb.org/t/p/w92/2aGrp1xw3qhwCYvNGAJZPdjfeeX.jpg' },
+  { id: 2303,  name: 'Paramount+',  logo: 'https://image.tmdb.org/t/p/w92/fts6X10Jn4QT0X6ac3udKEn2tJA.jpg' },
 ]
 
 interface Props {
@@ -57,7 +57,7 @@ export default function StreamingSettings({ profile }: Props) {
 
   return (
     <div className="bg-surface-container/60 backdrop-blur border border-white/[0.06] rounded-xl p-6 mb-6">
-      <h2 className="font-display text-xl text-on-surface mb-1">Streaming Services</h2>
+      <h2 className="font-display text-2xl text-cream mb-1">Streaming Services</h2>
       <p className="text-on-surface-variant text-sm mb-4">
         We&apos;ll show what&apos;s available on your services.
       </p>
@@ -75,8 +75,8 @@ export default function StreamingSettings({ profile }: Props) {
               className={cn(
                 'flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200 text-left disabled:opacity-70',
                 isSelected
-                  ? 'border-gold bg-gold/10'
-                  : 'border-white/10 bg-surface-container/40 hover:border-gold/40',
+                  ? 'border-ember bg-ember/10'
+                  : 'border-white/10 bg-surface-container/40 hover:border-ember/40',
               )}
             >
               <div className="w-9 h-9 rounded-lg overflow-hidden bg-surface-container-high flex-shrink-0">
@@ -97,7 +97,7 @@ export default function StreamingSettings({ profile }: Props) {
                 {service.name}
               </span>
               {isSelected && (
-                <Check className="w-4 h-4 text-gold flex-shrink-0" />
+                <Check className="w-4 h-4 text-ember flex-shrink-0" />
               )}
             </button>
           )

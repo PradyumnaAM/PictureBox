@@ -14,11 +14,9 @@ export async function DELETE(_req: NextRequest) {
   }
 
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin as any)
-    .from('profiles')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', user.id)
+  // profiles.id -> auth.users(id) ON DELETE CASCADE; all user content cascades
+  // from profiles, so deleting the auth user permanently removes everything.
+  const { error } = await admin.auth.admin.deleteUser(user.id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

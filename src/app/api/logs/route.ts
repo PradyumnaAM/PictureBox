@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { cacheTitleOnLog } from '@/lib/tmdb/cache'
+import { getMovie, getTVShow } from '@/lib/tmdb/client'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,7 +15,13 @@ interface LogBody {
   release_date: string | null
   overview?: string | null
   title_id?: string
-  status: 'watched' | 'watching' | 'want_to_watch' | 'dropped'
+  status:
+    | 'watched'
+    | 'watching'
+    | 'want_to_watch'
+    | 'dropped'
+    | 'completed'
+    | 'on_hold'
   rating?: number | null
   review?: string | null
   watched_at?: string | null
@@ -33,13 +41,14 @@ const VALID_STATUSES = new Set([
 // ─── POST /api/logs ───────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  // Auth check — uses anon+session client so RLS applies to the session check
+  // Auth check — getUser() revalidates the token with the Supabase auth server
   const supabase = await createClient()
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user || authError) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -63,66 +72,112 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // ── 1. Upsert the title into the shared reference table ───────────────────
-  // release_date is a DATE column — coerce empty strings to null so Postgres
-  // doesn't reject them (TMDB returns "" for unreleased/undated films).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: titleRow, error: titleError } = await (admin as any)
-    .from('titles')
-    .upsert(
-      {
-        tmdb_id:      body.tmdb_id,
-        media_type:   body.media_type,
-        title:        body.title ?? '',
-        poster_path:  body.poster_path  ?? null,
-        release_date: body.release_date || null,   // || coerces "" → null
-        overview:     body.overview     ?? null,
+  // ── 1. Cache the title into the shared reference table ────────────────────
+  // We store the FULL useful TMDB fields (runtime, genres, cast_crew with the
+  // Director crew) — not just poster/title — so downstream stats (total hours,
+  // favourite genres, favourite directors) have the data they need. The cache
+  // helper fetches the full TMDB detail, reuses an already-complete cached row,
+  // refreshes a row that's missing rich fields, and never overwrites a good row
+  // with a blank one. A `fallback` (from the request body) is used only if the
+  // TMDB detail fetch fails and nothing is cached yet.
+  let titleRow: { id: string }
+  try {
+    titleRow = await cacheTitleOnLog({
+      tmdbId: body.tmdb_id,
+      mediaType: body.media_type,
+      fetchDetail: (id) =>
+        body.media_type === 'movie' ? getMovie(id) : getTVShow(id),
+      fallback: {
+        title: body.title ?? '',
+        poster_path: body.poster_path ?? null,
+        release_date: body.release_date || null,
+        overview: body.overview ?? null,
       },
-      { onConflict: 'tmdb_id,media_type' },
-    )
-    .select('id')
-    .single()
-
-  if (titleError) {
-    console.error('[logs] title upsert error:', JSON.stringify(titleError, null, 2))
+    })
+  } catch (err) {
+    console.error('[logs] title cache error:', err)
     return NextResponse.json(
-      { error: 'Failed to save title', details: titleError.message },
+      {
+        error: 'Failed to save title',
+        details: err instanceof Error ? err.message : 'unknown error',
+      },
       { status: 500 },
     )
   }
 
-  const titleId: string = body.title_id ?? (titleRow as { id: string }).id
+  const titleId: string = body.title_id ?? titleRow.id
 
-  // ── 2. Upsert the user's log entry ────────────────────────────────────────
-  // The unique constraint is (user_id, title_id, season_id, episode_id, rewatch_count).
-  // For movies, season_id and episode_id are NULL. PostgreSQL treats NULL != NULL
-  // inside unique constraints, so the conflict clause won't match an existing row
-  // via NULL columns. We work around this by using ignoreDuplicates:false and
-  // handling the case where the user already has a log for this title by doing
-  // a select-then-upsert pattern until a proper partial index is added.
-  // For now we attempt the upsert and surface the real error if it fails.
+  // ── 2. Find-or-update the user's movie / show-level log entry ─────────────
+  // The unique constraint on user_logs includes the nullable season_id and
+  // episode_id columns. PostgreSQL treats NULL != NULL inside unique indexes,
+  // so ON CONFLICT / upsert does NOT dedupe movie or show-level logs (where
+  // both columns are NULL) — it just keeps inserting duplicates. We therefore
+  // do an explicit find-or-update in code: look for the user's existing current
+  // log for this title (season_id IS NULL AND episode_id IS NULL AND not soft-
+  // deleted) and UPDATE it if present, otherwise INSERT. This guarantees one
+  // current log per user+title.
+  const logFields = {
+    status:            body.status,
+    rating:            body.rating            ?? null,
+    review:            body.review            ?? null,
+    watched_at:        body.watched_at        ?? null,
+    contains_spoilers: body.contains_spoilers ?? false,
+    rewatch:           body.rewatch           ?? false,
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: logRow, error: logError } = await (admin as any)
+  const { data: existingLog, error: findError } = await (admin as any)
     .from('user_logs')
-    .upsert(
-      {
-        user_id:           session.user.id,
-        title_id:          titleId,
-        log_type:          body.media_type === 'movie' ? 'movie' : 'tv_show',
-        status:            body.status,
-        rating:            body.rating            ?? null,
-        review:            body.review            ?? null,
-        watched_at:        body.watched_at        ?? null,
-        contains_spoilers: body.contains_spoilers ?? false,
-        rewatch:           body.rewatch           ?? false,
-      },
-      { onConflict: 'user_id,title_id,season_id,episode_id,rewatch_count' },
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('title_id', titleId)
+    .is('season_id', null)
+    .is('episode_id', null)
+    .is('deleted_at', null)
+    .maybeSingle()
+
+  if (findError) {
+    console.error('[logs] log lookup error:', JSON.stringify(findError, null, 2))
+    return NextResponse.json(
+      { error: 'Failed to save log', details: findError.message },
+      { status: 500 },
     )
-    .select()
-    .single()
+  }
+
+  let logRow: unknown
+  let logError: { message: string } | null = null
+
+  if (existingLog) {
+    // Update the user's existing current log for this title.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (admin as any)
+      .from('user_logs')
+      .update(logFields)
+      .eq('id', (existingLog as { id: string }).id)
+      .eq('user_id', user.id)
+      .select()
+      .single()
+    logRow = data
+    logError = error
+  } else {
+    // Insert a fresh log for this title.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (admin as any)
+      .from('user_logs')
+      .insert({
+        user_id:  user.id,
+        title_id: titleId,
+        log_type: body.media_type === 'movie' ? 'movie' : 'tv_show',
+        ...logFields,
+      })
+      .select()
+      .single()
+    logRow = data
+    logError = error
+  }
 
   if (logError) {
-    console.error('[logs] log upsert error:', JSON.stringify(logError, null, 2))
+    console.error('[logs] log save error:', JSON.stringify(logError, null, 2))
     return NextResponse.json(
       { error: 'Failed to save log', details: logError.message },
       { status: 500 },

@@ -4,144 +4,155 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ==========================================================================
-   PictureBox design tokens — CSS custom properties
+   PictureBox design tokens — "Midnight Marquee"
+   Ink blue-black surfaces · paper-cream type · vermilion ember accent.
    PictureBox is always dark; :root and .dark are kept in sync so shadcn
    components that check .dark and server-rendered HTML both see the same values.
    ========================================================================== */
 
 :root {
-  /* Surfaces */
-  --surface-container-lowest:  #0e0e0e;
-  --surface-container-low:     #1c1b1b;
-  --surface-container:         #201f1f;
-  --surface-container-high:    #2b2a2a;
-  --surface-container-highest: #353434;
-  --surface-variant:           #353434;
-  --surface-bright:            #3a3939;
+  /* Surfaces — ink with a blue undertone */
+  --surface-container-lowest:  #060709;
+  --surface-container-low:     #0f1116;
+  --surface-container:         #14161d;
+  --surface-container-high:    #1b1e27;
+  --surface-container-highest: #232734;
+  --surface-variant:           #232734;
+  --surface-bright:            #2b3040;
 
-  /* On-surface text */
-  --on-surface:         #e5e2e1;
-  --on-surface-variant: #c4c7c7;
+  /* On-surface text — warm paper cream against cool ink */
+  --on-surface:         #ede9e0;
+  --on-surface-variant: #a6a29a;
 
   /* Outline */
-  --outline:         #8e9192;
-  --outline-variant: #444748;
+  --outline:         #71747f;
+  --outline-variant: #272b36;
 
-  /* Gold accent */
-  --gold:       #D4AF37;
-  --gold-hover: #b5952f;
+  /* Ember accent — marquee vermilion */
+  --ember:       #ff4d2e;
+  --ember-hover: #ff6a4e;
 
-  /* shadcn token overrides → PictureBox dark palette */
-  --background:          #141313;
-  --foreground:          #e5e2e1;
-  --card:                #201f1f;
-  --card-foreground:     #e5e2e1;
-  --popover:             #1c1b1b;
-  --popover-foreground:  #e5e2e1;
-  --primary:             #D4AF37;
-  --primary-foreground:  #000000;
-  --secondary:           #353434;
-  --secondary-foreground:#e5e2e1;
-  --muted:               #2b2a2a;
-  --muted-foreground:    #8e9192;
-  --accent:              #D4AF37;
-  --accent-foreground:   #000000;
-  --destructive:         #ffb4ab;
-  --border:              oklch(1 0 0 / 10%);
-  --input:               oklch(1 0 0 / 15%);
-  --ring:                #D4AF37;
+  /* shadcn token overrides → PictureBox ink palette */
+  --background:          #0b0c10;
+  --foreground:          #ede9e0;
+  --card:                #14161d;
+  --card-foreground:     #ede9e0;
+  --popover:             #0f1116;
+  --popover-foreground:  #ede9e0;
+  --primary:             #ff4d2e;
+  --primary-foreground:  #0b0c10;
+  --secondary:           #232734;
+  --secondary-foreground:#ede9e0;
+  --muted:               #1b1e27;
+  --muted-foreground:    #71747f;
+  --accent:              #ff4d2e;
+  --accent-foreground:   #0b0c10;
+  --destructive:         #ff9c8f;
+  --border:              oklch(0.9 0.02 80 / 10%);
+  --input:               oklch(0.9 0.02 80 / 14%);
+  --ring:                #ff4d2e;
 
   /* Base radius (shadcn reads --radius for [min(var(--radius-md),Npx)] patterns) */
-  --radius:    0.25rem;
-  --radius-sm: 0.125rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  --radius:    0.375rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 1rem;
 }
 
 /* Keep .dark in sync — shadcn components gate on this class */
 .dark {
-  --background:          #141313;
-  --foreground:          #e5e2e1;
-  --card:                #201f1f;
-  --card-foreground:     #e5e2e1;
-  --popover:             #1c1b1b;
-  --popover-foreground:  #e5e2e1;
-  --primary:             #D4AF37;
-  --primary-foreground:  #000000;
-  --secondary:           #353434;
-  --secondary-foreground:#e5e2e1;
-  --muted:               #2b2a2a;
-  --muted-foreground:    #8e9192;
-  --accent:              #D4AF37;
-  --accent-foreground:   #000000;
-  --destructive:         #ffb4ab;
-  --border:              oklch(1 0 0 / 10%);
-  --input:               oklch(1 0 0 / 15%);
-  --ring:                #D4AF37;
-  --radius:              0.25rem;
-  --radius-sm:           0.125rem;
-  --radius-md:           0.25rem;
-  --radius-lg:           0.5rem;
-  --radius-xl:           0.75rem;
+  --background:          #0b0c10;
+  --foreground:          #ede9e0;
+  --card:                #14161d;
+  --card-foreground:     #ede9e0;
+  --popover:             #0f1116;
+  --popover-foreground:  #ede9e0;
+  --primary:             #ff4d2e;
+  --primary-foreground:  #0b0c10;
+  --secondary:           #232734;
+  --secondary-foreground:#ede9e0;
+  --muted:               #1b1e27;
+  --muted-foreground:    #71747f;
+  --accent:              #ff4d2e;
+  --accent-foreground:   #0b0c10;
+  --destructive:         #ff9c8f;
+  --border:              oklch(0.9 0.02 80 / 10%);
+  --input:               oklch(0.9 0.02 80 / 14%);
+  --ring:                #ff4d2e;
+  --radius:              0.375rem;
+  --radius-sm:           0.25rem;
+  --radius-md:           0.375rem;
+  --radius-lg:           0.625rem;
+  --radius-xl:           1rem;
 }
 
 /* ==========================================================================
    Tailwind v4 @theme — static PictureBox design tokens
-   These become Tailwind utility classes: bg-gold, text-on-surface-variant, etc.
+   These become Tailwind utility classes: bg-ember, text-on-surface-variant, etc.
    ========================================================================== */
 
 @theme {
-  /* Gold */
-  --color-gold:       #D4AF37;
-  --color-gold-hover: #b5952f;
-  --color-gold-muted: color-mix(in oklch, #D4AF37 15%, transparent);
+  /* Ember */
+  --color-ember:       #ff4d2e;
+  --color-ember-hover: #ff6a4e;
+  --color-ember-muted: color-mix(in oklch, #ff4d2e 14%, transparent);
+
+  /* Gold — used by error pages and "sign in to track" prompts */
+  --color-gold:       #d4af37;
+  --color-gold-hover: #e0bd4e;
+
+  /* Cream — full-strength paper tone for display type */
+  --color-cream: #f3efe6;
 
   /* Surfaces */
-  --color-surface-container-lowest:  #0e0e0e;
-  --color-surface-container-low:     #1c1b1b;
-  --color-surface-container:         #201f1f;
-  --color-surface-container-high:    #2b2a2a;
-  --color-surface-container-highest: #353434;
-  --color-surface-variant:           #353434;
-  --color-surface-bright:            #3a3939;
+  --color-surface-container-lowest:  #060709;
+  --color-surface-container-low:     #0f1116;
+  --color-surface-container:         #14161d;
+  --color-surface-container-high:    #1b1e27;
+  --color-surface-container-highest: #232734;
+  --color-surface-variant:           #232734;
+  --color-surface-bright:            #2b3040;
 
   /* On-surface */
-  --color-on-surface:         #e5e2e1;
-  --color-on-surface-variant: #c4c7c7;
+  --color-on-surface:         #ede9e0;
+  --color-on-surface-variant: #a6a29a;
 
   /* Outline */
-  --color-outline:         #8e9192;
-  --color-outline-variant: #444748;
+  --color-outline:         #71747f;
+  --color-outline-variant: #272b36;
 
   /* Error (alias for destructive — use text-error, bg-error, border-error) */
-  --color-error: #ffb4ab;
+  --color-error: #ff9c8f;
 
   /* Typography scale */
-  --text-display-lg: 3rem;
-  --text-display-lg--line-height:    3.5rem;
-  --text-display-lg--letter-spacing: -0.02em;
-  --text-display-lg--font-weight:    700;
+  --text-display-lg: 3.25rem;
+  --text-display-lg--line-height:    1.04;
+  --text-display-lg--letter-spacing: -0.015em;
+  --text-display-lg--font-weight:    560;
 
-  --text-display-mobile: 2rem;
-  --text-display-mobile--line-height: 2.5rem;
-  --text-display-mobile--font-weight: 700;
+  --text-display-mobile: 2.125rem;
+  --text-display-mobile--line-height: 1.08;
+  --text-display-mobile--letter-spacing: -0.01em;
+  --text-display-mobile--font-weight: 560;
 
-  --text-headline: 1.5rem;
-  --text-headline--line-height: 2rem;
-  --text-headline--font-weight: 600;
+  --text-headline: 1.625rem;
+  --text-headline--line-height: 2.125rem;
+  --text-headline--letter-spacing: -0.01em;
+  --text-headline--font-weight: 550;
 
   --text-body-lg: 1.125rem;
   --text-body-lg--line-height: 1.75rem;
 
-  --text-label: 0.75rem;
+  /* Labels render in mono — timecode aesthetic */
+  --text-label: 0.6875rem;
   --text-label--line-height:    1rem;
-  --text-label--letter-spacing: 0.1em;
-  --text-label--font-weight:    600;
+  --text-label--letter-spacing: 0.16em;
+  --text-label--font-weight:    500;
 
   --text-meta: 0.8125rem;
   --text-meta--line-height: 1.125rem;
-  --text-meta--font-weight: 500;
+  --text-meta--font-weight: 450;
 
   /* Custom spacing → px-page-x, px-page-x-mobile, gap-gutter, etc. */
   --spacing-page-x:        4rem;    /* 64px */
@@ -149,15 +160,18 @@
   --spacing-gutter:        1.5rem;  /* 24px */
 
   /* Border radius */
-  --radius-sm: 0.125rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 1rem;
 
   /* Box shadows */
-  --shadow-gold-glow: 0 12px 32px -8px rgba(212,175,55,0.15);
-  --shadow-poster:    0 8px 24px rgba(0,0,0,0.5);
-  --shadow-header:    0 8px 32px 0 rgba(0,0,0,0.4);
+  --shadow-ember-glow: 0 12px 36px -8px rgba(255, 77, 46, 0.28);
+  --shadow-poster:     0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-header:     0 8px 32px 0 rgba(0, 0, 0, 0.45);
+
+  /* Motion */
+  --animate-marquee: marquee-x 48s linear infinite;
 }
 
 /* ==========================================================================
@@ -167,11 +181,13 @@
    ========================================================================== */
 
 @theme inline {
-  /* Fonts (Next.js sets --font-inter and --font-playfair on <body>) */
-  --font-sans:    var(--font-inter), "Inter", sans-serif;
-  --font-display: var(--font-playfair), "Playfair Display", serif;
-  --font-mono:    ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
-  --font-heading: var(--font-playfair), "Playfair Display", serif;
+  /* Fonts (Next.js sets these variables on <body>) */
+  --font-sans:    var(--font-instrument), "Instrument Sans", sans-serif;
+  --font-display: var(--font-fraunces), "Fraunces", Georgia, serif;
+  --font-mono:    var(--font-spline-mono), "Spline Sans Mono", ui-monospace, monospace;
+  --font-heading: var(--font-fraunces), "Fraunces", Georgia, serif;
+  /* font-label → mono: every uppercase label reads like a timecode */
+  --font-label:   var(--font-spline-mono), "Spline Sans Mono", ui-monospace, monospace;
 
   /* shadcn token forwarding — required for bg-primary, text-foreground, etc. */
   --color-background:          var(--background);
@@ -209,14 +225,46 @@
   }
 
   body {
-    background-color: #141313;
-    color: #e5e2e1;
+    background-color: #0b0c10;
+    /* Faint projector pool of light at the top of every page */
+    background-image: radial-gradient(
+      ellipse 120% 60% at 50% -10%,
+      rgba(255, 77, 46, 0.05) 0%,
+      rgba(38, 44, 66, 0.28) 35%,
+      transparent 70%
+    );
+    background-repeat: no-repeat;
+    color: #ede9e0;
     min-height: 100vh;
   }
 
   ::selection {
-    background-color: #D4AF37;
-    color: #000;
+    background-color: #ff4d2e;
+    color: #0b0c10;
+  }
+
+  /* Landing feature sections number themselves like film chapters */
+  body {
+    counter-reset: chapter;
+  }
+
+  /* Thin ink scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2b3040 transparent;
+  }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb {
+    background: #2b3040;
+    border-radius: 8px;
+    border: 2px solid #0b0c10;
+  }
+  *::-webkit-scrollbar-thumb:hover { background: #3a4154; }
+
+  :focus-visible {
+    outline: 2px solid #ff4d2e;
+    outline-offset: 2px;
   }
 }
 
@@ -230,27 +278,118 @@
     max-width: 1440px;
   }
 
+  /* Film-grain overlay — mount once in the root layout */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 192px 192px;
+  }
+
   /* Background image overlays */
   .bg-poster-overlay {
     background-image: linear-gradient(
       to bottom,
-      rgba(20, 19, 19, 0.7) 0%,
-      rgba(20, 19, 19, 0) 30%,
-      rgba(20, 19, 19, 0) 70%,
-      rgba(20, 19, 19, 0.9) 100%
+      rgba(11, 12, 16, 0.65) 0%,
+      rgba(11, 12, 16, 0) 30%,
+      rgba(11, 12, 16, 0) 68%,
+      rgba(11, 12, 16, 0.92) 100%
     );
   }
 
   .bg-hero-overlay {
     background-image: linear-gradient(
       to top,
-      #141313 0%,
-      rgba(20, 19, 19, 0.6) 50%,
+      #0b0c10 0%,
+      rgba(11, 12, 16, 0.6) 50%,
       transparent 100%
     );
+  }
+
+  /* Filmstrip sprocket holes — horizontal strip decoration */
+  .sprockets {
+    height: 14px;
+    background-image: radial-gradient(
+      circle at center,
+      rgba(243, 239, 230, 0.16) 0 3px,
+      transparent 3.5px
+    );
+    background-size: 26px 14px;
+    background-repeat: repeat-x;
+    background-position: center;
+  }
+
+  /* Ticket-stub perforated edge (top) */
+  .ticket-notch-top {
+    mask-image: radial-gradient(circle 7px at 8px 0, transparent 0 7px, black 7.5px),
+                linear-gradient(black, black);
+    mask-size: 24px 16px, 100% calc(100% - 0px);
+    mask-position: 0 0, 0 0;
+    mask-repeat: repeat-x, no-repeat;
+    mask-composite: intersect;
+  }
+
+  /* Chapter counter — used by landing FeatureSection eyebrows */
+  .chapter {
+    counter-increment: chapter;
+  }
+  .chapter-num::before {
+    content: counter(chapter, decimal-leading-zero);
   }
 
   /* Scrollbar hiding */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Gentle vertical float — hero quick-log card */
+  .animate-float {
+    animation: float-y 6s ease-in-out infinite;
+  }
+
+  /* Slow drift for the hero poster wall */
+  .animate-drift {
+    animation: drift-y 60s linear infinite alternate;
+  }
+
+  /* Horizontal marquee ticker — duplicate the track content once */
+  .animate-marquee {
+    animation: marquee-x 48s linear infinite;
+  }
+
+  /* Recording-light blink */
+  .animate-blink {
+    animation: blink-soft 2.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-drift,
+    .animate-marquee,
+    .animate-blink {
+      animation: none;
+    }
+  }
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes drift-y {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-4%); }
+}
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes blink-soft {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
 }

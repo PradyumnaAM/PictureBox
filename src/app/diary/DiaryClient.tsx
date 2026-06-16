@@ -70,10 +70,10 @@ function StarDisplay({ rating }: { rating: number }) {
         return (
           <div key={n} className="relative w-3 h-3 flex-shrink-0">
             <Star className="absolute inset-0 w-3 h-3 text-on-surface-variant/25" />
-            {full && <Star className="absolute inset-0 w-3 h-3 fill-gold text-gold" />}
+            {full && <Star className="absolute inset-0 w-3 h-3 fill-ember text-ember" />}
             {half && (
               <Star
-                className="absolute inset-0 w-3 h-3 fill-gold text-gold"
+                className="absolute inset-0 w-3 h-3 fill-ember text-ember"
                 style={{ clipPath: 'inset(0 50% 0 0)' }}
               />
             )}
@@ -147,7 +147,7 @@ function DiaryRow({ entry }: { entry: DiaryEntry }) {
         <div className="flex items-center flex-wrap gap-1">
           <Link
             href={href}
-            className="text-on-surface font-medium hover:text-gold transition-colors text-sm"
+            className="text-on-surface font-medium hover:text-ember transition-colors text-sm"
           >
             {title.title}
           </Link>
@@ -171,7 +171,7 @@ function DiaryRow({ entry }: { entry: DiaryEntry }) {
       <div className="flex-shrink-0 flex flex-col items-end gap-1.5 pt-0.5">
         {entry.rating != null && <StarDisplay rating={entry.rating} />}
         {entry.rewatch && (
-          <span className="text-gold text-xs font-medium" title="Rewatch">↺</span>
+          <span className="text-ember text-xs font-medium" title="Rewatch">↺</span>
         )}
       </div>
     </div>
@@ -225,7 +225,7 @@ export default function DiaryClient({ entries }: Props) {
         </p>
         <Link
           href="/films"
-          className="mt-6 bg-gold text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-gold-hover active:scale-95 transition-all"
+          className="mt-6 bg-ember text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-ember-hover active:scale-95 transition-all"
         >
           Browse Films
         </Link>
@@ -245,7 +245,7 @@ export default function DiaryClient({ entries }: Props) {
               onClick={() => setFilter(value)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 filter === value
-                  ? 'bg-gold text-black'
+                  ? 'bg-ember text-black'
                   : 'bg-surface-container text-on-surface-variant hover:text-on-surface'
               }`}
             >
@@ -264,7 +264,7 @@ export default function DiaryClient({ entries }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search your diary…"
-            className="w-full sm:w-56 bg-surface-container border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-gold/50 transition-colors"
+            className="w-full sm:w-56 bg-surface-container border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-ember/50 transition-colors"
           />
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function DiaryClient({ entries }: Props) {
       {/* Month groups */}
       {grouped.map(([month, monthEntries]) => (
         <div key={month}>
-          <h2 className="font-display text-xl text-on-surface border-b border-white/10 pb-3 mb-4 mt-10">
+          <h2 className="font-display text-2xl text-cream border-b border-white/10 pb-3 mb-4 mt-10">
             {month}{' '}
             <span className="text-on-surface-variant text-base font-sans font-normal">
               · {monthEntries.length} {monthEntries.length === 1 ? 'entry' : 'entries'}

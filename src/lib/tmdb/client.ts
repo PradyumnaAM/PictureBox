@@ -112,10 +112,11 @@ export async function getTVEpisode(
 export async function getTrending(
   type: 'movie' | 'tv' | 'all',
   window: 'day' | 'week',
+  page = 1,
 ): Promise<TMDBSearchResult[]> {
   const data = await tmdbFetch<TMDBPagedResult<TMDBSearchResult>>(
     `/trending/${type}/${window}`,
-    {},
+    { page },
     { next: { revalidate: 3600 } },
   )
   return data.results

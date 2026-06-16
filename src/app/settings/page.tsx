@@ -1,9 +1,7 @@
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
 import type { Metadata } from 'next'
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import ProfileSettings from '@/components/settings/ProfileSettings'
 import StreamingSettings from '@/components/settings/StreamingSettings'
 import PrivacySettings from '@/components/settings/PrivacySettings'
@@ -27,19 +25,7 @@ export interface Profile {
 }
 
 export default async function SettingsPage() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll() {},
-      },
-    },
-  )
+  const supabase = await createClient()
 
   const {
     data: { user },
@@ -49,9 +35,10 @@ export default async function SettingsPage() {
     redirect('/sign-in')
   }
 
-  const adminClient = createAdminClient()
+  // RLS client: profiles_select policy exposes the user's own row always
+  // (id = auth.uid() is always true for select on own profile).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: profileData } = await (adminClient as any)
+  const { data: profileData } = await (supabase as any)
     .from('profiles')
     .select('*')
     .eq('id', user.id)
@@ -72,7 +59,7 @@ export default async function SettingsPage() {
   return (
     <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-3xl mx-auto px-4 md:px-8">
-          <h1 className="font-display text-3xl text-on-surface mb-8">Settings</h1>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-8">Settings</h1>
 
           <ProfileSettings profile={profile} />
           <StreamingSettings profile={profile} />

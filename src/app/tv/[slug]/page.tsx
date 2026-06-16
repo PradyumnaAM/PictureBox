@@ -1,10 +1,19 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Heart, Plus } from 'lucide-react'
 
-import { getTVShow, getTVSeason } from '@/lib/tmdb/client'
+import { getGenres, getTVShow, getTVSeason } from '@/lib/tmdb/client'
+import { createClient } from '@/lib/supabase/server'
+import {
+  fetchCategoryResults,
+  findCategory,
+  toPosterItems,
+} from '@/lib/tmdb/browse'
+import CategoryView from '@/components/browse/CategoryView'
 import TrackShowButton from '@/components/tv/TrackShowButton'
+import WatchlistLikeButtons from '@/components/film/WatchlistLikeButtons'
+import ReviewList, { type Review } from '@/components/film/ReviewList'
 import {
   formatReleaseYear,
   getBackdropUrl,
@@ -34,15 +43,29 @@ function statusStyle(status: string): string {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
+
+  // Browse category (e.g. /tv/trending-this-week) — slug is not an id-title show slug.
+  const category = findCategory('tv', slug)
+  if (category) {
+    return {
+      title: `${category.title} — TV Shows`,
+      description: `${category.title} TV shows on PictureBox.`,
+    }
+  }
+
   const id = parseInt(slug.split('-')[0])
-  const show = await getTVShow(id)
-  const backdropUrl = getBackdropUrl(show.backdrop_path, 'lg')
-  return {
-    title: show.name,
-    description: show.overview?.slice(0, 160),
-    openGraph: {
-      images: backdropUrl ? [backdropUrl] : [],
-    },
+  try {
+    const show = await getTVShow(id)
+    const backdropUrl = getBackdropUrl(show.backdrop_path, 'lg')
+    return {
+      title: show.name,
+      description: show.overview?.slice(0, 160),
+      openGraph: {
+        images: backdropUrl ? [backdropUrl] : [],
+      },
+    }
+  } catch {
+    return { title: 'Show not found' }
   }
 }
 
@@ -50,12 +73,95 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function TVShowPage({ params }: PageProps) {
   const { slug } = await params
+
+  // Browse category grid (e.g. /tv/trending-this-week) takes precedence over
+  // the show-detail view, which expects an "{id}-{title}" slug.
+  const category = findCategory('tv', slug)
+  if (category) {
+    const [genres, results] = await Promise.all([
+      getGenres(),
+      fetchCategoryResults(category),
+    ])
+    const genreMap = new Map(genres.map((g) => [g.id, g.name]))
+    return (
+      <CategoryView
+        kicker="The Index · Television"
+        title={category.title}
+        items={toPosterItems(results, genreMap)}
+        linkPrefix="/tv"
+        backHref="/tv"
+        backLabel="All Shows"
+      />
+    )
+  }
+
   const tmdbId = parseInt(slug.split('-')[0])
 
-  const [show, season1] = await Promise.all([
-    getTVShow(tmdbId),
+  let show
+  try {
+    show = await getTVShow(tmdbId)
+  } catch {
+    notFound()
+  }
+
+  const [season1, supabase] = await Promise.all([
     getTVSeason(tmdbId, 1).catch(() => null),
+    createClient(),
   ])
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // ── Per-user data (RLS-scoped): profile country, reviews, own log ─────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const { data: titleRow } = await db
+    .from('titles')
+    .select('id')
+    .eq('tmdb_id', tmdbId)
+    .eq('media_type', 'tv')
+    .maybeSingle()
+  const titleId: string | null = (titleRow as { id: string } | null)?.id ?? null
+
+  let countryCode = 'US'
+  if (user) {
+    const { data: profile } = await db
+      .from('profiles')
+      .select('country_code')
+      .eq('id', user.id)
+      .maybeSingle()
+    countryCode = (profile as { country_code: string | null } | null)?.country_code || 'US'
+  }
+
+  let reviews: Review[] = []
+  if (titleId) {
+    const { data: reviewRows } = await db
+      .from('user_logs')
+      .select(
+        'id, rating, review, contains_spoilers, watched_at, created_at, profiles:user_id(username, display_name, avatar_url)',
+      )
+      .eq('title_id', titleId)
+      .not('review', 'is', null)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+    reviews = (reviewRows as Review[] | null) ?? []
+  }
+
+  let myLog: { id: string; status: string; liked: boolean } | null = null
+  if (user && titleId) {
+    const { data: logRow } = await db
+      .from('user_logs')
+      .select('id, status, liked')
+      .eq('user_id', user.id)
+      .eq('title_id', titleId)
+      .is('season_id', null)
+      .is('episode_id', null)
+      .is('deleted_at', null)
+      .maybeSingle()
+    myLog = (logRow as { id: string; status: string; liked: boolean } | null) ?? null
+  }
 
   const backdropUrl = getBackdropUrl(show.backdrop_path, 'lg')
 
@@ -71,7 +177,9 @@ export default async function TVShowPage({ params }: PageProps) {
   const creators = show.created_by ?? []
   const creatorStr = creators.map((c) => c.name).join(', ')
 
-  const providers = show['watch/providers']?.results?.US?.flatrate ?? []
+  const providerRegions = show['watch/providers']?.results ?? {}
+  const region = providerRegions[countryCode] ?? providerRegions['US'] ?? null
+  const providers = region?.flatrate ?? []
   const cast = show.credits?.cast.slice(0, 8) ?? []
 
   const regularSeasons = (show.seasons ?? []).filter((s) => s.season_number > 0)
@@ -105,42 +213,38 @@ export default async function TVShowPage({ params }: PageProps) {
 
             {/* Left: info + CTAs */}
             <div className="flex-1 min-w-0">
-              {/* Metadata pills */}
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                {networkYearStr && (
-                  <span className="bg-surface-variant/80 backdrop-blur text-on-surface text-label uppercase border border-white/10 px-2 py-1 rounded">
-                    {networkYearStr}
-                  </span>
-                )}
+              {/* Timecode metadata line */}
+              <p className="font-mono text-xs text-cream/80 uppercase tracking-[0.14em] mb-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+                {networkYearStr && <span>{networkYearStr}</span>}
                 {show.genres?.slice(0, 3).map((g) => (
-                  <span
-                    key={g.id}
-                    className="bg-surface-variant/80 backdrop-blur text-on-surface text-label uppercase border border-white/10 px-2 py-1 rounded"
-                  >
+                  <span key={g.id} className="flex items-center gap-3">
+                    <span className="text-ember">/</span>
                     {g.name}
                   </span>
                 ))}
-              </div>
+              </p>
 
               {/* Title */}
-              <h1 className="font-display text-4xl md:text-6xl text-white font-bold tracking-tighter mb-2">
+              <h1 className="font-display text-4xl md:text-6xl text-cream font-semibold tracking-tight leading-[1.04] mb-3">
                 {show.name}
               </h1>
 
               {/* Tagline */}
               {show.tagline && (
-                <p className="italic text-on-surface-variant text-lg mb-2">{show.tagline}</p>
+                <p className="font-display italic text-on-surface-variant text-lg mb-2">
+                  {show.tagline}
+                </p>
               )}
 
               {/* Created by */}
               {creatorStr && (
-                <p className="text-on-surface-variant text-sm mb-4">
-                  Created by {creatorStr}
+                <p className="font-mono text-xs uppercase tracking-[0.14em] text-on-surface-variant mb-4">
+                  Created by <span className="text-cream">{creatorStr}</span>
                 </p>
               )}
 
               {/* Stats row */}
-              <div className="flex flex-wrap items-center gap-4 text-on-surface-variant text-sm mb-6">
+              <div className="flex flex-wrap items-center gap-4 font-mono text-xs uppercase tracking-[0.12em] text-on-surface-variant mb-6">
                 {show.number_of_seasons > 0 && (
                   <span>{show.number_of_seasons} Season{show.number_of_seasons !== 1 ? 's' : ''}</span>
                 )}
@@ -156,28 +260,31 @@ export default async function TVShowPage({ params }: PageProps) {
 
               {/* Action buttons */}
               <div className="flex gap-3 flex-wrap">
-                <TrackShowButton
-                  show={{
-                    id: show.id,
-                    name: show.name,
-                    poster_path: show.poster_path,
-                    first_air_date: show.first_air_date,
-                  }}
-                />
-                <button
-                  type="button"
-                  className="bg-surface-container/60 backdrop-blur border border-white/20 text-white font-label uppercase font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-white/10 transition-all active:scale-95"
-                >
-                  <Plus className="w-4 h-4" />
-                  Watchlist
-                </button>
-                <button
-                  type="button"
-                  className="bg-surface-container/60 backdrop-blur border border-white/20 text-white font-label uppercase font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-white/10 transition-all active:scale-95"
-                >
-                  <Heart className="w-4 h-4" />
-                  Like
-                </button>
+                {user && (
+                  <>
+                    <TrackShowButton
+                      show={{
+                        id: show.id,
+                        name: show.name,
+                        poster_path: show.poster_path,
+                        first_air_date: show.first_air_date,
+                      }}
+                    />
+                    <WatchlistLikeButtons
+                      title={{
+                        tmdb_id: show.id,
+                        media_type: 'tv',
+                        title: show.name,
+                        poster_path: show.poster_path,
+                        release_date: show.first_air_date || null,
+                      }}
+                      isLoggedIn={!!user}
+                      initialOnWatchlist={myLog?.status === 'want_to_watch'}
+                      initialLiked={myLog?.liked ?? false}
+                      initialLogId={myLog?.id ?? null}
+                    />
+                  </>
+                )}
                 {trailerKey && (
                   <a
                     href={`https://youtube.com/watch?v=${trailerKey}`}
@@ -189,19 +296,27 @@ export default async function TVShowPage({ params }: PageProps) {
                   </a>
                 )}
               </div>
+
+              {!user && (
+                <Link
+                  href="/sign-in"
+                  className="text-on-surface-variant text-sm hover:text-gold transition mt-3 inline-block"
+                >
+                  Sign in to track this show →
+                </Link>
+              )}
             </div>
 
             {/* Right: community rating (desktop only) */}
             <div className="hidden md:block shrink-0">
-              <div className="bg-surface-container/80 backdrop-blur-xl border border-white/10 rounded-xl p-6 min-w-[200px] text-center">
-                <p className="text-[10px] text-on-surface-variant uppercase tracking-widest font-semibold mb-2">
-                  Community Rating
+              <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg p-6 min-w-[200px] text-center">
+                <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mb-2">
+                  Rating
                 </p>
-                <p className="font-display text-5xl font-bold text-gold leading-none">
+                <p className="font-display text-5xl font-semibold text-ember leading-none">
                   {show.vote_average.toFixed(1)}
-                  <span className="font-sans text-xl text-on-surface-variant font-normal">/10</span>
                 </p>
-                <p className="text-on-surface-variant text-sm mt-1">
+                <p className="font-mono text-[10px] text-on-surface-variant mt-3">
                   {show.vote_count.toLocaleString()} votes
                 </p>
               </div>
@@ -219,13 +334,13 @@ export default async function TVShowPage({ params }: PageProps) {
           <div className="md:col-span-8">
 
             {/* Overview */}
-            <h2 className="font-display text-xl text-on-surface mb-4">Overview</h2>
+            <h2 className="font-display text-2xl text-cream mb-4">Overview</h2>
             <p className="text-on-surface-variant leading-relaxed">{show.overview}</p>
 
             {/* Seasons & Episodes */}
             {regularSeasons.length > 0 && (
               <>
-                <h2 className="font-display text-xl text-on-surface mb-6 mt-10">
+                <h2 className="font-display text-2xl text-cream mb-6 mt-10">
                   Seasons &amp; Episodes
                 </h2>
                 <SeasonAccordion
@@ -239,7 +354,7 @@ export default async function TVShowPage({ params }: PageProps) {
             {/* Cast */}
             {cast.length > 0 && (
               <>
-                <h2 className="font-display text-xl text-on-surface mb-4 mt-10">Cast</h2>
+                <h2 className="font-display text-2xl text-cream mb-4 mt-10">Cast</h2>
                 <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
                   {cast.map((member) => {
                     const photo = getProfileUrl(member.profile_path)
@@ -273,11 +388,23 @@ export default async function TVShowPage({ params }: PageProps) {
               </>
             )}
 
-            {/* Reviews placeholder */}
-            <h2 className="font-display text-xl text-on-surface mb-4 mt-10">Reviews</h2>
-            <div className="bg-surface-container rounded-xl p-8 text-center">
-              <p className="text-on-surface-variant mb-4">No reviews yet. Be the first.</p>
-            </div>
+            {/* Reviews */}
+            <h2 className="font-display text-2xl text-cream mb-4 mt-10">Reviews</h2>
+            {reviews.length > 0 ? (
+              <ReviewList reviews={reviews} />
+            ) : (
+              <div className="bg-surface-container rounded-xl p-8 text-center">
+                <p className="text-on-surface-variant mb-4">No reviews yet. Be the first.</p>
+                {!user && (
+                  <Link
+                    href="/sign-in"
+                    className="text-on-surface-variant text-sm hover:text-gold transition"
+                  >
+                    Sign in to write a review
+                  </Link>
+                )}
+              </div>
+            )}
 
           </div>
 
@@ -285,7 +412,7 @@ export default async function TVShowPage({ params }: PageProps) {
           <div className="md:col-span-4">
 
             {/* Where to Watch */}
-            <h3 className="font-display text-lg text-on-surface mb-4">Where to Watch</h3>
+            <h3 className="font-display text-xl text-cream mb-4">Where to Watch</h3>
             {providers.length > 0 ? (
               <div>
                 {providers.map((provider) => (
@@ -303,7 +430,7 @@ export default async function TVShowPage({ params }: PageProps) {
               </div>
             ) : (
               <p className="text-on-surface-variant text-sm">
-                Not currently streaming in the US
+                Not currently streaming in your region
               </p>
             )}
 
@@ -362,7 +489,7 @@ export default async function TVShowPage({ params }: PageProps) {
             {/* More Like This */}
             {(show.similar?.results.length ?? 0) > 0 && (
               <>
-                <h3 className="font-display text-lg text-on-surface mb-4 mt-6">More Like This</h3>
+                <h3 className="font-display text-xl text-cream mb-4 mt-6">More Like This</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {show.similar!.results.slice(0, 4).map((item) => {
                     const itemName = item.name ?? item.title ?? ''
@@ -389,7 +516,7 @@ export default async function TVShowPage({ params }: PageProps) {
                             <div className="w-full h-full bg-surface-container" />
                           )}
                         </div>
-                        <p className="text-sm font-medium text-on-surface mt-1 truncate group-hover:text-gold transition-colors">
+                        <p className="text-sm font-medium text-on-surface mt-1 truncate group-hover:text-ember transition-colors">
                           {itemName}
                         </p>
                         {itemYear && (

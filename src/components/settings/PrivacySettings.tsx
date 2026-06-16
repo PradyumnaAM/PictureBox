@@ -33,7 +33,7 @@ function ToggleRow({ label, description, checked, onChange, disabled, isLast }: 
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors duration-200 flex-shrink-0 ml-4 disabled:opacity-50 disabled:cursor-not-allowed ${
-          checked ? 'bg-gold' : 'bg-surface-variant'
+          checked ? 'bg-ember' : 'bg-surface-variant'
         }`}
       >
         <span
@@ -86,7 +86,7 @@ export default function PrivacySettings({ profile }: Props) {
 
   return (
     <div className="bg-surface-container/60 backdrop-blur border border-white/[0.06] rounded-xl p-6 mb-6">
-      <h2 className="font-display text-xl text-on-surface mb-4">Privacy</h2>
+      <h2 className="font-display text-2xl text-cream mb-4">Privacy</h2>
 
       <ToggleRow
         label="Public profile"

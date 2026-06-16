@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: 'Cookie Policy — PictureBox' }
 export default function CookiesPage() {
   return (
     <div className="text-on-surface leading-relaxed">
-      <h1 className="font-display text-3xl text-on-surface mb-2">Cookie Policy</h1>
+      <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-2">Cookie Policy</h1>
       <span className="text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded-full mb-8 inline-block">
         Last updated: June 2026
       </span>
@@ -15,7 +15,7 @@ export default function CookiesPage() {
         our site.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         What Are Cookies?
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -23,7 +23,7 @@ export default function CookiesPage() {
         remember information about your visit, such as whether you are signed in.
       </p>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         Cookies We Use
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -40,7 +40,7 @@ export default function CookiesPage() {
         <li>Expires when your session ends or after a configurable period of inactivity</li>
       </ul>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         What We Don&apos;t Use
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -53,7 +53,7 @@ export default function CookiesPage() {
         <li>Any cookie that tracks you across other websites</li>
       </ul>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         How to Clear Cookies
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
@@ -80,12 +80,12 @@ export default function CookiesPage() {
         </li>
       </ul>
 
-      <h2 className="font-display text-xl text-on-surface mt-10 mb-3 border-b border-white/10 pb-2">
+      <h2 className="font-display text-2xl text-cream mt-10 mb-3 border-b border-white/10 pb-2">
         Contact
       </h2>
       <p className="text-on-surface-variant mb-4 leading-relaxed">
         Questions about our cookie use? Email{' '}
-        <a href="mailto:privacy@picturebox.app" className="text-gold hover:underline">
+        <a href="mailto:privacy@picturebox.app" className="text-ember hover:underline">
           privacy@picturebox.app
         </a>
         .

@@ -34,10 +34,33 @@ export async function PATCH(req: NextRequest) {
   }
 
   const admin = createAdminClient()
+
+  // Build the update. When a log transitions into a "watched"/"completed"
+  // state we also stamp watched_at (date-only) so diary dates and yearly
+  // stats are correct instead of falling back to created_at. We never
+  // clobber an existing watched_at.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const update: Record<string, any> = { status: body.status }
+
+  if (body.status === 'watched' || body.status === 'completed') {
+    // Only set watched_at if it isn't already set on the existing row.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: existing } = await (admin as any)
+      .from('user_logs')
+      .select('watched_at')
+      .eq('id', body.log_id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!existing?.watched_at) {
+      update.watched_at = new Date().toISOString().slice(0, 10)
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin as any)
     .from('user_logs')
-    .update({ status: body.status })
+    .update(update)
     .eq('id', body.log_id)
     .eq('user_id', user.id)
 

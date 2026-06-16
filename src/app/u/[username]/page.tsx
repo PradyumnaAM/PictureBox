@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import ProfileTabs, { type LogEntry } from '@/components/profile/ProfileTabs'
 import FollowButton from '@/components/profile/FollowButton'
 import Footer from '@/components/layout/Footer'
@@ -33,9 +32,11 @@ interface UserStats {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { username } = await params
+  // RLS client: public profiles are visible to everyone, private ones to
+  // their owner and followers — exactly the visibility this page should have.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
-  const { data } = await admin
+  const db = (await createClient()) as any
+  const { data } = await db
     .from('profiles')
     .select('display_name, username')
     .eq('username', username)
@@ -50,10 +51,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function UserProfilePage({ params }: PageProps) {
   const { username } = await params
   const supabase = await createClient()
+  // All queries go through the RLS client — profiles_select / follows_select /
+  // user_logs_select policies grant exactly the rows this page may show.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
+  const db = supabase as any
 
-  const { data: profileData } = await admin
+  const { data: profileData } = await db
     .from('profiles')
     .select('*')
     .eq('username', username)
@@ -75,23 +78,23 @@ export default async function UserProfilePage({ params }: PageProps) {
     { count: followingCount },
     { data: isFollowingData },
   ] = await Promise.all([
-    admin.rpc('get_user_stats', { p_user_id: profile.id }),
-    admin
+    db.rpc('get_user_stats', { p_user_id: profile.id }),
+    db
       .from('user_logs')
       .select('*, titles(*)')
       .eq('user_id', profile.id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(100),
-    admin
+    db
       .from('follows')
       .select('*', { count: 'exact', head: true })
       .eq('following_id', profile.id),
-    admin
+    db
       .from('follows')
       .select('*', { count: 'exact', head: true })
       .eq('follower_id', profile.id),
-    admin
+    db
       .from('follows')
       .select('id')
       .eq('follower_id', user?.id ?? '')
@@ -127,17 +130,18 @@ export default async function UserProfilePage({ params }: PageProps) {
 
           {/* Left: avatar + info */}
           <div className="flex items-start gap-6">
-            {/* Avatar */}
-            <div className="w-24 h-24 rounded-full bg-gold flex items-center justify-center flex-shrink-0">
-              <span className="font-display text-4xl font-bold text-black">{initial}</span>
+            {/* Avatar — projected frame */}
+            <div className="relative w-24 h-24 rounded-xl bg-gradient-to-br from-surface-container-highest to-surface-container border border-white/10 flex items-center justify-center flex-shrink-0 shadow-poster">
+              <span className="font-display text-4xl font-semibold text-ember">{initial}</span>
+              <span aria-hidden className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-ember border-2 border-background" />
             </div>
 
             {/* Text */}
             <div>
-              <h1 className="font-display text-3xl text-on-surface">
+              <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream">
                 {profile.display_name ?? profile.username}
               </h1>
-              <p className="text-on-surface-variant text-sm mt-1">@{profile.username}</p>
+              <p className="font-mono text-xs text-on-surface-variant mt-1.5">@{profile.username}</p>
               {profile.bio && (
                 <p className="text-on-surface-variant mt-2 max-w-lg text-sm leading-relaxed">
                   {profile.bio}
@@ -160,7 +164,9 @@ export default async function UserProfilePage({ params }: PageProps) {
                 </button>
               </div>
 
-              <p className="text-on-surface-variant text-xs mt-2">Member since {memberSince}</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-outline mt-2.5">
+                Member since {memberSince}
+              </p>
             </div>
           </div>
 
@@ -184,12 +190,17 @@ export default async function UserProfilePage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-          {statCards.map(({ label, value }) => (
-            <div key={label} className="bg-surface-container rounded-xl p-5 text-center">
-              <p className="font-display text-3xl text-gold">{value}</p>
-              <p className="text-on-surface-variant text-xs uppercase tracking-widest mt-1">
+        {/* Stats strip — one filmstrip-style band, divided like frames */}
+        <div className="grid grid-cols-2 md:grid-cols-4 mt-10 rounded-xl overflow-hidden border border-white/[0.07] bg-surface-container-low divide-x divide-y md:divide-y-0 divide-white/[0.06]">
+          {statCards.map(({ label, value }, i) => (
+            <div key={label} className="relative p-6 text-center group hover:bg-surface-container transition-colors">
+              <span aria-hidden className="absolute top-3 left-4 font-mono text-[10px] text-outline">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <p className="font-display text-3xl md:text-4xl font-semibold text-cream group-hover:text-ember transition-colors">
+                {value}
+              </p>
+              <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mt-2">
                 {label}
               </p>
             </div>

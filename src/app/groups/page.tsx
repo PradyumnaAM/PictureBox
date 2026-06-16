@@ -77,7 +77,7 @@ export default async function GroupsPage() {
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
             <div>
-              <h1 className="font-display text-4xl text-on-surface">Group Watchlists</h1>
+              <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-cream">Group Watchlists</h1>
               <p className="text-on-surface-variant mt-1">Watch together. Decide together.</p>
             </div>
             <div className="flex gap-3 mt-1">
@@ -112,18 +112,18 @@ export default async function GroupsPage() {
                     key={group.id}
                     className="bg-surface-container/60 backdrop-blur border border-white/[0.06] rounded-xl p-5"
                   >
-                    <h2 className="font-display text-xl text-on-surface truncate">{group.name}</h2>
+                    <h2 className="font-display text-2xl text-cream truncate">{group.name}</h2>
                     <p className="text-on-surface-variant text-sm mt-1">
                       {memberCount} {memberCount === 1 ? 'member' : 'members'}
                     </p>
 
                     <div className="flex items-center gap-3 mt-4 flex-wrap">
-                      <span className="bg-surface-container-high px-3 py-1 rounded-full font-mono text-sm text-gold">
+                      <span className="bg-surface-container-high px-3 py-1 rounded-full font-mono text-sm text-ember">
                         Code: {group.invite_code}
                       </span>
                       <Link
                         href={`/groups/${group.id}`}
-                        className="ml-auto bg-gold text-black font-label uppercase tracking-widest text-xs font-bold px-4 py-1.5 rounded hover:bg-gold-hover active:scale-95 transition-all"
+                        className="ml-auto bg-ember text-black font-label uppercase tracking-widest text-xs font-bold px-4 py-1.5 rounded hover:bg-ember-hover active:scale-95 transition-all"
                       >
                         Open
                       </Link>

@@ -65,7 +65,7 @@ export default function JoinGroupModal() {
               <X size={20} />
             </button>
 
-            <h2 className="font-display text-2xl text-on-surface mb-1">Join a Group</h2>
+            <h2 className="font-display text-2xl font-semibold text-cream mb-1">Join a Group</h2>
             <p className="text-on-surface-variant text-sm mb-5">
               Enter an invite code to join a group watchlist.
             </p>
@@ -84,14 +84,14 @@ export default function JoinGroupModal() {
                   placeholder="e.g. ABCD1234"
                   autoFocus
                   required
-                  className="w-full bg-surface-container-high border border-white/10 rounded-lg px-4 py-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/50 focus:outline-none focus:border-gold/60 transition-colors font-mono tracking-widest uppercase"
+                  className="w-full bg-surface-container-high border border-white/10 rounded-lg px-4 py-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/50 focus:outline-none focus:border-ember/60 transition-colors font-mono tracking-widest uppercase"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={!code.trim() || loading}
-                className="w-full bg-gold text-black font-label uppercase tracking-widest text-sm font-bold py-2.5 rounded hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-ember text-black font-label uppercase tracking-widest text-sm font-bold py-2.5 rounded hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Joining…' : 'Join Group'}
               </button>

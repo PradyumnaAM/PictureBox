@@ -75,10 +75,10 @@ function StarDisplay({ rating }: { rating: number }) {
         return (
           <div key={n} className="relative w-3 h-3 flex-shrink-0">
             <Star className="absolute inset-0 w-3 h-3 text-on-surface-variant/25" />
-            {full && <Star className="absolute inset-0 w-3 h-3 fill-gold text-gold" />}
+            {full && <Star className="absolute inset-0 w-3 h-3 fill-ember text-ember" />}
             {half && (
               <Star
-                className="absolute inset-0 w-3 h-3 fill-gold text-gold"
+                className="absolute inset-0 w-3 h-3 fill-ember text-ember"
                 style={{ clipPath: 'inset(0 50% 0 0)' }}
               />
             )}
@@ -121,8 +121,8 @@ function PosterCard({ log }: { log: LogEntry }) {
         {/* Rating badge */}
         {log.rating && (
           <div className="absolute bottom-1.5 left-1.5 flex items-center gap-0.5 bg-black/70 backdrop-blur-sm rounded px-1.5 py-0.5">
-            <Star className="w-2.5 h-2.5 fill-gold text-gold" />
-            <span className="text-gold text-[10px] font-semibold">{log.rating.toFixed(1)}</span>
+            <Star className="w-2.5 h-2.5 fill-ember text-ember" />
+            <span className="text-ember text-[10px] font-semibold">{log.rating.toFixed(1)}</span>
           </div>
         )}
         {/* Status badge for TV */}
@@ -139,7 +139,7 @@ function PosterCard({ log }: { log: LogEntry }) {
           </div>
         )}
       </div>
-      <p className="text-xs text-on-surface mt-1.5 truncate group-hover:text-gold transition-colors">
+      <p className="text-xs text-on-surface mt-1.5 truncate group-hover:text-ember transition-colors">
         {title.title}
       </p>
     </Link>
@@ -174,7 +174,7 @@ function ReviewCard({ log }: { log: LogEntry }) {
         </Link>
         {/* Meta */}
         <div className="flex-1 min-w-0">
-          <Link href={href} className="font-medium text-on-surface hover:text-gold transition-colors text-sm">
+          <Link href={href} className="font-medium text-on-surface hover:text-ember transition-colors text-sm">
             {title.title}
           </Link>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -193,7 +193,7 @@ function ReviewCard({ log }: { log: LogEntry }) {
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="text-gold text-xs mt-2 hover:text-gold-hover transition-colors"
+          className="text-ember text-xs mt-2 hover:text-ember-hover transition-colors"
         >
           {expanded ? 'Show less' : 'Read more'}
         </button>
@@ -240,13 +240,13 @@ export default function ProfileTabs({ logs }: ProfileTabsProps) {
             onClick={() => setActive(id)}
             className={`px-4 py-3 text-sm font-medium transition-colors relative ${
               active === id
-                ? 'text-gold'
+                ? 'text-ember'
                 : 'text-on-surface-variant hover:text-on-surface'
             }`}
           >
             {label}
             {active === id && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold rounded-t" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-ember rounded-t" />
             )}
           </button>
         ))}
@@ -260,7 +260,7 @@ export default function ProfileTabs({ logs }: ProfileTabsProps) {
           ) : (
             grouped.map(([month, monthLogs]: [string, LogEntry[]]) => (
               <div key={month} className="mb-8">
-                <h3 className="font-display text-lg text-on-surface border-b border-white/10 pb-2 mb-4">
+                <h3 className="font-display text-xl text-cream border-b border-white/10 pb-2 mb-4">
                   {month}
                 </h3>
                 {monthLogs.map((log) => {
@@ -303,14 +303,14 @@ export default function ProfileTabs({ logs }: ProfileTabsProps) {
                       <div className="flex-1 min-w-0">
                         <Link
                           href={href}
-                          className="text-on-surface font-medium hover:text-gold transition-colors text-sm truncate block"
+                          className="text-on-surface font-medium hover:text-ember transition-colors text-sm truncate block"
                         >
                           {title.title}
                         </Link>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span
                             className={`text-xs font-bold uppercase tracking-wider ${
-                              isFilm ? 'text-gold/70' : 'text-on-surface-variant'
+                              isFilm ? 'text-ember/70' : 'text-on-surface-variant'
                             }`}
                           >
                             {isFilm ? 'Film' : 'TV'}

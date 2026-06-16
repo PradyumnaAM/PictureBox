@@ -2,10 +2,12 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getTVShow } from '@/lib/tmdb/client'
 
 interface BulkEpisode {
   episode_id: number   // TMDB episode ID
   episode_number: number
+  runtime?: number | null
 }
 
 interface BulkBody {
@@ -14,6 +16,60 @@ interface BulkBody {
   tmdb_show_id: number
   season_number: number
   episodes: BulkEpisode[]
+  show_name?: string
+}
+
+// ─── Shared helper: resolve the title UUID without ever writing a blank name ───
+// Never creates or overwrites the parent title row with an empty/whitespace
+// title. An existing row is reused as-is; a missing row is created using the
+// real show name (from the payload when present, otherwise fetched from TMDB).
+async function resolveTvTitleId(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  admin: any,
+  tmdbShowId: number,
+  showName?: string,
+): Promise<string | null> {
+  const { data: existing } = await admin
+    .from('titles')
+    .select('id')
+    .eq('tmdb_id', tmdbShowId)
+    .eq('media_type', 'tv')
+    .maybeSingle()
+
+  if (existing) return (existing as { id: string }).id
+
+  let title = (showName ?? '').trim()
+  if (!title) {
+    try {
+      const show = await getTVShow(tmdbShowId)
+      title = (show.name ?? '').trim()
+    } catch (err) {
+      console.error('[logs/bulk] TMDB title lookup failed:', err)
+    }
+  }
+
+  if (!title) return null
+
+  const { data: inserted, error } = await admin
+    .from('titles')
+    .upsert(
+      { tmdb_id: tmdbShowId, media_type: 'tv', title },
+      { onConflict: 'tmdb_id,media_type' },
+    )
+    .select('id')
+    .single()
+
+  if (error || !inserted) {
+    const { data: raced } = await admin
+      .from('titles')
+      .select('id')
+      .eq('tmdb_id', tmdbShowId)
+      .eq('media_type', 'tv')
+      .maybeSingle()
+    return (raced as { id: string } | null)?.id ?? null
+  }
+
+  return (inserted as { id: string }).id
 }
 
 // ─── POST /api/logs/bulk ──────────────────────────────────────────────────────
@@ -22,10 +78,11 @@ interface BulkBody {
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user || authError) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -50,9 +107,9 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient() as any
 
   if (body.status === 'watched') {
-    return handleMarkWatched(admin, session.user.id, body)
+    return handleMarkWatched(admin, user.id, body)
   } else {
-    return handleMarkUnwatched(admin, session.user.id, body)
+    return handleMarkUnwatched(admin, user.id, body)
   }
 }
 
@@ -64,29 +121,8 @@ async function handleMarkWatched(
 ) {
   const today = new Date().toISOString().split('T')[0]
 
-  // ── 1. Resolve title UUID ────────────────────────────────────────────────
-  let titleId: string | null = null
-  const { data: titleUpsert, error: titleUpsertError } = await admin
-    .from('titles')
-    .upsert(
-      { tmdb_id: body.tmdb_show_id, media_type: 'tv', title: '' },
-      { onConflict: 'tmdb_id,media_type' },
-    )
-    .select('id')
-    .single()
-
-  if (!titleUpsertError && titleUpsert) {
-    titleId = (titleUpsert as { id: string }).id
-  } else {
-    const { data: existing } = await admin
-      .from('titles')
-      .select('id')
-      .eq('tmdb_id', body.tmdb_show_id)
-      .eq('media_type', 'tv')
-      .single()
-    titleId = (existing as { id: string } | null)?.id ?? null
-  }
-
+  // ── 1. Resolve title UUID (never writes a blank title) ───────────────────
+  const titleId = await resolveTvTitleId(admin, body.tmdb_show_id, body.show_name)
   if (!titleId) {
     return NextResponse.json({ error: 'Failed to resolve title' }, { status: 500 })
   }
@@ -111,16 +147,19 @@ async function handleMarkWatched(
   // ── 3. For each episode: resolve UUID then upsert log ───────────────────
   await Promise.all(
     body.episodes.map(async (ep) => {
+      // Persist runtime when provided (positive only) so it feeds total-hours.
+      const episodeRecord: Record<string, unknown> = {
+        season_id: seasonId,
+        episode_number: ep.episode_number,
+        tmdb_episode_id: ep.episode_id,
+      }
+      if (typeof ep.runtime === 'number' && ep.runtime > 0) {
+        episodeRecord.runtime = ep.runtime
+      }
+
       const { data: episodeRow, error: episodeError } = await admin
         .from('episodes')
-        .upsert(
-          {
-            season_id: seasonId,
-            episode_number: ep.episode_number,
-            tmdb_episode_id: ep.episode_id,
-          },
-          { onConflict: 'season_id,episode_number' },
-        )
+        .upsert(episodeRecord, { onConflict: 'season_id,episode_number' })
         .select('id')
         .single()
 
@@ -131,20 +170,35 @@ async function handleMarkWatched(
 
       const episodeId: string = (episodeRow as { id: string }).id
 
-      await admin
+      // Revive-or-insert: a prior unwatch soft-deletes the row. A plain upsert
+      // would conflict on the unique key but leave deleted_at set, keeping the
+      // episode hidden. Update any existing row (clearing deleted_at) or insert.
+      const { data: existingLog } = await admin
         .from('user_logs')
-        .upsert(
-          {
-            user_id: userId,
-            title_id: titleId,
-            log_type: 'tv_episode',
-            status: 'watched',
-            watched_at: today,
-            season_id: seasonId,
-            episode_id: episodeId,
-          },
-          { onConflict: 'user_id,title_id,season_id,episode_id,rewatch_count' },
-        )
+        .select('id')
+        .eq('user_id', userId)
+        .eq('title_id', titleId)
+        .eq('log_type', 'tv_episode')
+        .eq('season_id', seasonId)
+        .eq('episode_id', episodeId)
+        .maybeSingle()
+
+      if (existingLog) {
+        await admin
+          .from('user_logs')
+          .update({ status: 'watched', watched_at: today, deleted_at: null })
+          .eq('id', (existingLog as { id: string }).id)
+      } else {
+        await admin.from('user_logs').insert({
+          user_id: userId,
+          title_id: titleId,
+          log_type: 'tv_episode',
+          status: 'watched',
+          watched_at: today,
+          season_id: seasonId,
+          episode_id: episodeId,
+        })
+      }
     }),
   )
 

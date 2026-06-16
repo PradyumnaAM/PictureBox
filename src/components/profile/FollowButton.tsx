@@ -28,7 +28,7 @@ export default function FollowButton({
     return (
       <Link
         href="/sign-in"
-        className="bg-gold text-black font-label uppercase tracking-widest text-sm font-bold px-5 py-2.5 rounded hover:bg-gold-hover active:scale-95 transition-all inline-block"
+        className="bg-ember text-black font-label uppercase tracking-widest text-sm font-bold px-5 py-2.5 rounded hover:bg-ember-hover active:scale-95 transition-all inline-block"
       >
         Follow
       </Link>
@@ -84,7 +84,7 @@ export default function FollowButton({
       type="button"
       onClick={handleFollow}
       disabled={loading}
-      className="bg-gold text-black font-label uppercase tracking-widest text-sm font-bold px-5 py-2.5 rounded hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      className="bg-ember text-black font-label uppercase tracking-widest text-sm font-bold px-5 py-2.5 rounded hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
     >
       Follow
     </button>

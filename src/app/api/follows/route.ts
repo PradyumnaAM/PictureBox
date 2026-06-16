@@ -1,20 +1,18 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 
-async function getAuthUser() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user
-}
+// Follows go through the RLS client: follows_insert / follows_delete policies
+// already restrict rows to follower_id = auth.uid(), so no service-role
+// bypass is needed.
 
 // ─── POST /api/follows ────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const user = await getAuthUser()
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let body: { following_id: string }
@@ -32,9 +30,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Cannot follow yourself' }, { status: 400 })
   }
 
-  const admin = createAdminClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin as any)
+  const { error } = await (supabase as any)
     .from('follows')
     .upsert(
       { follower_id: user.id, following_id: body.following_id },
@@ -49,7 +46,10 @@ export async function POST(req: NextRequest) {
 // ─── DELETE /api/follows ──────────────────────────────────────────────────────
 
 export async function DELETE(req: NextRequest) {
-  const user = await getAuthUser()
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let body: { following_id: string }
@@ -63,9 +63,8 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Missing following_id' }, { status: 400 })
   }
 
-  const admin = createAdminClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin as any)
+  const { error } = await (supabase as any)
     .from('follows')
     .delete()
     .eq('follower_id', user.id)

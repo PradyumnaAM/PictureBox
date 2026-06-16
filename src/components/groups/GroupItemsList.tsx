@@ -172,7 +172,7 @@ export default function GroupItemsList({
             <div className="flex-1 min-w-0">
               <Link
                 href={href}
-                className="text-on-surface font-medium text-sm hover:text-gold transition-colors block truncate"
+                className="text-on-surface font-medium text-sm hover:text-ember transition-colors block truncate"
               >
                 {title.title}
               </Link>
@@ -185,7 +185,7 @@ export default function GroupItemsList({
 
             {/* Vote count */}
             <div className="flex-shrink-0 text-center w-10">
-              <p className="font-display text-2xl text-gold leading-none">{item.vote_count}</p>
+              <p className="font-display text-2xl text-ember leading-none">{item.vote_count}</p>
               <p className="text-on-surface-variant text-[10px] mt-0.5">votes</p>
             </div>
 
@@ -197,8 +197,8 @@ export default function GroupItemsList({
               title={hasVoted ? 'Remove vote' : 'Vote for this'}
               className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 disabled:opacity-50 ${
                 hasVoted
-                  ? 'bg-gold text-black'
-                  : 'bg-surface-container border border-white/10 text-on-surface-variant hover:border-gold/40 hover:text-gold'
+                  ? 'bg-ember text-black'
+                  : 'bg-surface-container border border-white/10 text-on-surface-variant hover:border-ember/40 hover:text-ember'
               }`}
             >
               <ThumbsUp size={16} strokeWidth={hasVoted ? 2.5 : 1.5} />

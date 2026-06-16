@@ -59,12 +59,12 @@ export default function ProfileSettings({ profile }: Props) {
   }
 
   const inputClass =
-    'w-full bg-surface-container border border-white/10 rounded-lg px-4 py-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/50 focus:outline-none focus:border-gold/60 transition-colors'
+    'w-full bg-surface-container border border-white/10 rounded-lg px-4 py-2.5 text-on-surface text-sm placeholder:text-on-surface-variant/50 focus:outline-none focus:border-ember/60 transition-colors'
   const labelClass = 'block text-sm text-on-surface-variant mb-1.5'
 
   return (
     <div className="bg-surface-container/60 backdrop-blur border border-white/[0.06] rounded-xl p-6 mb-6">
-      <h2 className="font-display text-xl text-on-surface mb-4">Profile</h2>
+      <h2 className="font-display text-2xl text-cream mb-4">Profile</h2>
 
       <div className="space-y-4">
         <div>
@@ -142,7 +142,7 @@ export default function ProfileSettings({ profile }: Props) {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="bg-gold text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-ember text-black font-label uppercase tracking-widest text-sm font-bold px-6 py-2.5 rounded hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? 'Saving…' : 'Save Changes'}
         </button>

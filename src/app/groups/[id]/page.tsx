@@ -89,8 +89,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
       .eq('group_id', groupId),
     adminAny
       .from('group_votes')
-      .select('item_id')
-      .eq('group_id', groupId)
+      .select('group_item_id')
       .eq('user_id', user.id),
   ])
 
@@ -99,7 +98,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
   const group = groupData as GroupWatchlist
   const items = (itemsData ?? []) as GroupItem[]
   const members = (membersData ?? []) as GroupMember[]
-  const votedItemIds = ((userVotesData ?? []) as { item_id: string }[]).map((v) => v.item_id)
+  const votedItemIds = ((userVotesData ?? []) as { group_item_id: string }[]).map((v) => v.group_item_id)
 
   const displayMembers = members.slice(0, 5)
   const extraCount = Math.max(0, members.length - 5)
@@ -110,7 +109,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl text-on-surface mb-3">{group.name}</h1>
+            <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-3">{group.name}</h1>
 
             {/* Member avatars */}
             <div className="flex items-center gap-3 flex-wrap">
@@ -123,7 +122,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
                     <div
                       key={member.id}
                       title={member.profiles?.display_name ?? member.profiles?.username}
-                      className="w-8 h-8 rounded-full bg-gold text-black text-xs font-bold flex items-center justify-center border-2 border-background"
+                      className="w-8 h-8 rounded-full bg-ember text-black text-xs font-bold flex items-center justify-center border-2 border-background"
                     >
                       {initial}
                     </div>
@@ -140,7 +139,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
               </span>
 
               {/* Invite code */}
-              <span className="ml-auto font-mono text-sm text-gold bg-surface-container px-3 py-1 rounded-full">
+              <span className="ml-auto font-mono text-sm text-ember bg-surface-container px-3 py-1 rounded-full">
                 Invite friends: {group.invite_code}
               </span>
             </div>

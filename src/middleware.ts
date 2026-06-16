@@ -11,6 +11,7 @@ const PROTECTED_ROUTES = [
   '/dashboard',
   '/feed',
   '/watchlist',
+  '/diary',
   '/log',
   '/groups',
   '/settings',
@@ -74,7 +75,7 @@ export const config = {
    * - _next/static (static files)
    * - _next/image (image optimization)
    * - favicon.ico, and common static image assets
-   * Public routes (/, /sign-in, /sign-up, /film/*, /tv/*, /u/*, /legal/*) still
+   * Public routes (/, /sign-in, /sign-up, /tv/*, /u/*, /legal/*) still
    * pass through so the session can be refreshed; they just aren't gated above.
    */
   matcher: [

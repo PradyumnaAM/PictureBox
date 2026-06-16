@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -17,14 +18,14 @@ const GENRES = [
 ]
 
 const SERVICES = [
-  { id: 8,    name: 'Netflix',      logo: 'https://image.tmdb.org/t/p/original/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg' },
-  { id: 119,  name: 'Amazon Prime', logo: 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg' },
-  { id: 337,  name: 'Disney+',      logo: 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19d.jpg' },
-  { id: 1899, name: 'HBO Max',       logo: 'https://image.tmdb.org/t/p/original/Ajqyt5aNxNvaG0sDlXd3tP5t0MQ.jpg' },
-  { id: 350,  name: 'Apple TV+',    logo: 'https://image.tmdb.org/t/p/original/4KAy34EHvRM25Ih8wb82AJE7gS5.jpg' },
-  { id: 15,   name: 'Hulu',         logo: 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg' },
-  { id: 386,  name: 'Peacock',      logo: 'https://image.tmdb.org/t/p/original/8VCV78prwd9QzZnEm0ReO6bERDa.jpg' },
-  { id: 531,  name: 'Paramount+',   logo: 'https://image.tmdb.org/t/p/original/h5DcR0J2EESLitnhR8xLG1QymTE.jpg' },
+  { id: 8,    name: 'Netflix',      logo: 'https://image.tmdb.org/t/p/w92/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg' },
+  { id: 9,    name: 'Amazon Prime', logo: 'https://image.tmdb.org/t/p/w92/pvske1MyAoymrs5bguRfVqYiM9a.jpg' },
+  { id: 337,  name: 'Disney+',      logo: 'https://image.tmdb.org/t/p/w92/97yvRBw1GzX7fXprcF80er19ot.jpg' },
+  { id: 1899, name: 'HBO Max',       logo: 'https://image.tmdb.org/t/p/w92/jbe4gVSfRlbPTdESXhEKpornsfu.jpg' },
+  { id: 350,  name: 'Apple TV+',    logo: 'https://image.tmdb.org/t/p/w92/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg' },
+  { id: 15,   name: 'Hulu',         logo: 'https://image.tmdb.org/t/p/w92/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg' },
+  { id: 386,  name: 'Peacock',      logo: 'https://image.tmdb.org/t/p/w92/2aGrp1xw3qhwCYvNGAJZPdjfeeX.jpg' },
+  { id: 2303,  name: 'Paramount+',   logo: 'https://image.tmdb.org/t/p/w92/fts6X10Jn4QT0X6ac3udKEn2tJA.jpg' },
 ]
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -70,13 +71,25 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
+        const { error } = await (supabase as any)
           .from('profiles')
-          .update({ streaming_services: selectedServices })
+          .update({
+            streaming_services: selectedServices,
+            favorite_genres: selectedGenres,
+          })
           .eq('id', user.id)
+        if (error) {
+          console.error('[onboarding] failed to save preferences:', error.message)
+          toast.error('Could not save your preferences. Please try again.')
+          setSaving(false)
+          return
+        }
       }
-    } finally {
       router.push('/feed')
+    } catch (err) {
+      console.error('[onboarding] unexpected error:', err)
+      toast.error('Something went wrong. Please try again.')
+      setSaving(false)
     }
   }
 
@@ -85,7 +98,7 @@ export default function OnboardingPage() {
       <div className="bg-surface-container/60 backdrop-blur-xl border border-white/10 rounded-xl p-8 md:p-12 w-full max-w-2xl">
 
         {/* Logo */}
-        <p className="font-display text-xl text-gold text-center mb-6">PictureBox</p>
+        <p className="font-display text-xl text-ember text-center mb-6">PictureBox</p>
 
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2 mb-10">
@@ -94,7 +107,7 @@ export default function OnboardingPage() {
               key={s}
               className={cn(
                 'rounded-full transition-all duration-300',
-                s === step ? 'w-6 h-2 bg-gold' : 'w-2 h-2 bg-white/30',
+                s === step ? 'w-6 h-2 bg-ember' : 'w-2 h-2 bg-white/30',
               )}
             />
           ))}
@@ -103,7 +116,7 @@ export default function OnboardingPage() {
         {/* ── STEP 1: Genres ── */}
         {step === 1 && (
           <div>
-            <h1 className="font-display text-2xl md:text-3xl text-on-surface font-bold text-center mb-2">
+            <h1 className="font-display text-2xl md:text-3xl text-on-surface font-semibold text-center mb-2">
               What do you love watching?
             </h1>
             <p className="text-on-surface-variant text-sm text-center mb-8">
@@ -121,8 +134,8 @@ export default function OnboardingPage() {
                     className={cn(
                       'border rounded-full px-4 py-2 font-label text-sm cursor-pointer transition-all duration-200',
                       selected
-                        ? 'bg-gold text-black border-gold'
-                        : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-gold/50',
+                        ? 'bg-ember text-black border-ember'
+                        : 'bg-surface-container text-on-surface-variant border-outline-variant hover:border-ember/50',
                     )}
                   >
                     {genre}
@@ -135,7 +148,7 @@ export default function OnboardingPage() {
               type="button"
               disabled={selectedGenres.length < 3}
               onClick={() => setStep(2)}
-              className="w-full bg-gold text-black font-label uppercase font-bold py-3 rounded-md hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full bg-ember text-black font-label uppercase font-bold py-3 rounded-md hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Continue {selectedGenres.length > 0 && `(${selectedGenres.length} selected)`}
             </button>
@@ -145,7 +158,7 @@ export default function OnboardingPage() {
         {/* ── STEP 2: Streaming services ── */}
         {step === 2 && (
           <div>
-            <h1 className="font-display text-2xl md:text-3xl text-on-surface font-bold text-center mb-2">
+            <h1 className="font-display text-2xl md:text-3xl text-on-surface font-semibold text-center mb-2">
               Where do you watch?
             </h1>
             <p className="text-on-surface-variant text-sm text-center mb-8">
@@ -163,8 +176,8 @@ export default function OnboardingPage() {
                     className={cn(
                       'flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all duration-200 text-left',
                       selected
-                        ? 'border-gold bg-gold/10'
-                        : 'border-outline-variant bg-surface-container/40 hover:border-gold/50',
+                        ? 'border-ember bg-ember/10'
+                        : 'border-outline-variant bg-surface-container/40 hover:border-ember/50',
                     )}
                   >
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high flex-shrink-0">
@@ -185,7 +198,7 @@ export default function OnboardingPage() {
                       {service.name}
                     </span>
                     {selected && (
-                      <Check className="w-4 h-4 text-gold ml-auto shrink-0" />
+                      <Check className="w-4 h-4 text-ember ml-auto shrink-0" />
                     )}
                   </button>
                 )
@@ -195,7 +208,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               onClick={() => setStep(3)}
-              className="w-full bg-gold text-black font-label uppercase font-bold py-3 rounded-md hover:bg-gold-hover active:scale-95 transition-all"
+              className="w-full bg-ember text-black font-label uppercase font-bold py-3 rounded-md hover:bg-ember-hover active:scale-95 transition-all"
             >
               Continue
             </button>
@@ -214,7 +227,7 @@ export default function OnboardingPage() {
         {/* ── STEP 3: Summary ── */}
         {step === 3 && (
           <div>
-            <h1 className="font-display text-2xl md:text-3xl text-on-surface font-bold text-center mb-2">
+            <h1 className="font-display text-2xl md:text-3xl text-on-surface font-semibold text-center mb-2">
               You&apos;re almost in.
             </h1>
             <p className="text-on-surface-variant text-sm text-center mb-8">
@@ -246,7 +259,7 @@ export default function OnboardingPage() {
               type="button"
               disabled={saving}
               onClick={finish}
-              className="w-full bg-gold text-black font-label uppercase font-bold py-3 rounded-md hover:bg-gold-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-ember text-black font-label uppercase font-bold py-3 rounded-md hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Setting up…' : 'Start Exploring'}
             </button>

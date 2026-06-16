@@ -60,7 +60,7 @@ function ResultRow({ item, isHighlighted, onClick }: ResultRowProps) {
 
       <div className="flex-1 min-w-0 text-left">
         <p className={`font-medium truncate transition-colors ${
-          isHighlighted ? 'text-gold' : 'text-on-surface group-hover:text-gold'
+          isHighlighted ? 'text-ember' : 'text-on-surface group-hover:text-ember'
         }`}>
           {title}
         </p>
@@ -279,7 +279,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       </div>
                       <div>
                         <p className={`text-sm font-medium line-clamp-1 transition-colors ${
-                          highlightedIndex === i ? 'text-gold' : 'text-on-surface group-hover:text-gold'
+                          highlightedIndex === i ? 'text-ember' : 'text-on-surface group-hover:text-ember'
                         }`}>
                           {title}
                         </p>

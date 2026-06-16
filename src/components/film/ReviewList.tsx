@@ -22,10 +22,10 @@ function StarDisplay({ rating }: { rating: number }) {
         return (
           <div key={n} className="relative w-3.5 h-3.5">
             <Star className="absolute inset-0 w-3.5 h-3.5 text-on-surface-variant/30" />
-            {full && <Star className="absolute inset-0 w-3.5 h-3.5 fill-gold text-gold" />}
+            {full && <Star className="absolute inset-0 w-3.5 h-3.5 fill-ember text-ember" />}
             {half && (
               <Star
-                className="absolute inset-0 w-3.5 h-3.5 fill-gold text-gold"
+                className="absolute inset-0 w-3.5 h-3.5 fill-ember text-ember"
                 style={{ clipPath: 'inset(0 50% 0 0)' }}
               />
             )}
@@ -69,7 +69,7 @@ function ReviewCard({ review }: { review: Review }) {
               <button
                 type="button"
                 onClick={() => setRevealed(true)}
-                className="bg-surface-container/90 backdrop-blur border border-white/10 rounded-lg px-3 py-1.5 text-xs text-on-surface font-medium hover:border-gold transition-colors"
+                className="bg-surface-container/90 backdrop-blur border border-white/10 rounded-lg px-3 py-1.5 text-xs text-on-surface font-medium hover:border-ember transition-colors"
               >
                 Contains spoilers — click to reveal
               </button>
