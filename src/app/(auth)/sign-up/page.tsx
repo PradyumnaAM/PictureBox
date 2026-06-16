@@ -92,20 +92,33 @@ export default function SignUpPage() {
   const onSubmit = async (data: FormData) => {
     setServerError(null)
 
-    // Respect the availability checker so the user actually gets the handle they
-    // chose (the DB trigger would otherwise silently suffix a taken username).
-    if (usernameStatus === 'checking') {
-      setServerError('Still checking username availability — please wait a moment.')
-      return
+    // Final authoritative availability check. We do it here rather than gating
+    // the button on the debounced `usernameStatus`, because that status falls
+    // back to 'idle' whenever the background check is rate-limited (429), errors,
+    // or simply hasn't finished — which would otherwise leave the user unable to
+    // submit a perfectly valid form, with no feedback.
+    let available = usernameStatus === 'available'
+    if (!available) {
+      try {
+        const res = await fetch(
+          `/api/auth/check-username?username=${encodeURIComponent(data.username)}`,
+        )
+        if (res.ok) {
+          const json: { available: boolean } = await res.json()
+          available = json.available
+        } else {
+          // Couldn't verify (e.g. rate limited) — don't block a legitimate
+          // signup; the DB's unique constraint is the final arbiter.
+          available = true
+        }
+      } catch {
+        available = true
+      }
     }
-    if (usernameStatus === 'taken') {
+
+    if (!available) {
       form.setError('username', { type: 'manual', message: 'This username is already taken' })
       setServerError('That username is already taken. Please choose another.')
-      return
-    }
-    if (usernameStatus !== 'available') {
-      form.setError('username', { type: 'manual', message: 'Please choose a valid, available username' })
-      setServerError('Please choose a valid, available username.')
       return
     }
 
@@ -256,7 +269,7 @@ export default function SignUpPage() {
           {/* Submit */}
           <button
             type="submit"
-            disabled={form.formState.isSubmitting || usernameStatus !== 'available'}
+            disabled={form.formState.isSubmitting}
             className="w-full bg-ember text-black font-label uppercase font-bold py-3 rounded-md hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {form.formState.isSubmitting ? (
