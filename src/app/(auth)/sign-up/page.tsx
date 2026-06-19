@@ -129,6 +129,7 @@ export default function SignUpPage() {
       options: { data: { username: data.username } },
     })
     if (error) { setServerError(error.message); return }
+    router.refresh()
     router.push('/onboarding')
   }
 

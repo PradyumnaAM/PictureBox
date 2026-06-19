@@ -232,7 +232,7 @@ export default function ProfileTabs({ logs }: ProfileTabsProps) {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex items-center gap-1 border-b border-white/10 mb-6">
+      <div className="flex items-center gap-1 border-b border-white/10 mb-6 overflow-x-auto no-scrollbar">
         {TABS.map(({ id, label }) => (
           <button
             key={id}

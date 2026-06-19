@@ -226,9 +226,17 @@ export default async function TVShowPage({ params }: PageProps) {
               </p>
 
               {/* Title */}
-              <h1 className="mb-3 font-display text-4xl font-semibold leading-[0.98] tracking-tight text-cream md:text-7xl">
+              <h1 className="mb-3 font-display text-3xl font-semibold leading-[0.98] tracking-tight text-cream sm:text-4xl md:text-7xl">
                 {show.name}
               </h1>
+
+              {/* Rating — mobile only (desktop version is in the right column) */}
+              <div className="flex items-center gap-2 mb-3 md:hidden">
+                <span className="font-mono text-2xl font-semibold text-ember">
+                  {show.vote_average.toFixed(1)}
+                </span>
+                <span className="text-on-surface-variant text-xs">/ 10 · {show.vote_count.toLocaleString()} votes</span>
+              </div>
 
               {/* Tagline */}
               {show.tagline && (

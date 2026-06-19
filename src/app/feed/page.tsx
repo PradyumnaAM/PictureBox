@@ -122,24 +122,28 @@ function FeedCard({ log }: { log: FeedLog }) {
   return (
     <div className="bg-surface-container/60 backdrop-blur border border-white/[0.06] rounded-xl p-5 mb-4">
       {/* User row */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-8 h-8 rounded-full bg-ember text-black text-xs font-bold flex items-center justify-center flex-shrink-0">
+      <div className="flex items-start gap-3">
+        <div className="w-8 h-8 rounded-full bg-ember text-black text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
           {getInitial(profile)}
         </div>
-        <div className="flex items-center gap-1 flex-wrap text-sm">
-          <Link
-            href={`/u/${profile.username}`}
-            className="font-semibold text-on-surface hover:text-ember transition-colors"
-          >
-            {profile.display_name ?? profile.username}
-          </Link>
-          <span className="text-on-surface-variant">{action}</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-1 flex-wrap text-sm">
+              <Link
+                href={`/u/${profile.username}`}
+                className="font-semibold text-on-surface hover:text-ember transition-colors"
+              >
+                {profile.display_name ?? profile.username}
+              </Link>
+              <span className="text-on-surface-variant">{action}</span>
+            </div>
+            <span className="text-on-surface-variant text-xs flex-shrink-0 mt-0.5">{timeAgo}</span>
+          </div>
         </div>
-        <span className="ml-auto text-on-surface-variant text-xs flex-shrink-0">{timeAgo}</span>
       </div>
 
       {/* Detail row */}
-      <div className="flex gap-4 mt-4">
+      <div className="flex gap-4 mt-4 ml-11">
         {/* Poster */}
         <Link href={detailHref} className="flex-shrink-0">
           <div className="relative w-12 h-16 rounded overflow-hidden bg-surface-container-high">
@@ -275,6 +279,22 @@ export default async function FeedPage() {
                   Activity
                 </h1>
               </header>
+
+              {/* Stats strip — mobile/tablet only (desktop sees sidebar) */}
+              {stats && (
+                <div className="lg:hidden grid grid-cols-3 gap-3 mb-8">
+                  {[
+                    { value: stats.total_movies ?? 0, label: 'Films' },
+                    { value: stats.total_episodes ?? 0, label: 'Episodes' },
+                    { value: `${stats.total_hours ?? 0}h`, label: 'Hours' },
+                  ].map(({ value, label }) => (
+                    <div key={label} className="bg-surface-container/60 backdrop-blur border border-white/[0.06] rounded-xl p-4 text-center">
+                      <p className="font-display text-xl text-ember">{value}</p>
+                      <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mt-1">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Empty state — no follows */}
               {!hasFollows && (

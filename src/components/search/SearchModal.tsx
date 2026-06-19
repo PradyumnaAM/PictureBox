@@ -206,7 +206,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       onClick={onClose}
     >
       <div
-        className="absolute left-1/2 top-[10%] w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-lg border border-ember/25 bg-surface-container-high shadow-header"
+        className="absolute left-1/2 top-[10%] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 overflow-hidden rounded-lg border border-ember/25 bg-surface-container-high shadow-header"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Search input ── */}
@@ -244,7 +244,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               <p className="font-sans text-label uppercase tracking-widest text-on-surface-variant mb-3">
                 Trending
               </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {trending.map((item, i) => {
                   const title = item.title ?? item.name ?? ''
                   const year = formatReleaseYear(item.release_date ?? item.first_air_date)

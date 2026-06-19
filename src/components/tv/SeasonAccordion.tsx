@@ -412,8 +412,8 @@ export default function SeasonAccordion({
                         {epNum}
                       </span>
 
-                      {/* Still image */}
-                      <div className="relative w-24 h-14 rounded overflow-hidden flex-shrink-0 bg-surface-container-highest">
+                      {/* Still image — hidden on mobile to give title more room */}
+                      <div className="relative hidden sm:block w-24 h-14 rounded overflow-hidden flex-shrink-0 bg-surface-container-highest">
                         {stillUrl ? (
                           <Image
                             src={stillUrl}
@@ -439,8 +439,8 @@ export default function SeasonAccordion({
                         )}
                       </div>
 
-                      {/* Star rating — visible on hover */}
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0">
+                      {/* Star rating — always visible on mobile, hover-reveal on desktop */}
+                      <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}

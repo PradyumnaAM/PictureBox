@@ -64,6 +64,9 @@ export default function SignInPage() {
     })
     // Never reveal which field is wrong
     if (error) { setServerError('Invalid email or password'); return }
+    // refresh() re-syncs Next.js App Router with the new session cookies before
+    // navigating, so middleware and server components see the authenticated state.
+    router.refresh()
     router.push(safeRedirect(redirectTo))
   }
 

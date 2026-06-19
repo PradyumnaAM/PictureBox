@@ -100,8 +100,8 @@ export default function PosterRow({
         </div>
 
         {/* Edge fade masks — above cards (z-5), below arrows (z-10) */}
-        <div className="pointer-events-none absolute left-0 top-0 z-[5] h-full w-24 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 z-[5] h-full w-24 bg-gradient-to-l from-background to-transparent" />
+        <div className="pointer-events-none absolute left-0 top-0 z-[5] h-full w-10 md:w-24 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 z-[5] h-full w-10 md:w-24 bg-gradient-to-l from-background to-transparent" />
 
         {/* Right arrow */}
         <button

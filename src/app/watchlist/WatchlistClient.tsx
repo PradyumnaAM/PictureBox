@@ -185,8 +185,8 @@ export default function WatchlistClient({ items: initialItems }: Props) {
                     </div>
                   )}
 
-                  {/* Hover action overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 z-20">
+                  {/* Action overlay — always visible on touch, hover-reveal on desktop */}
+                  <div className="absolute inset-0 bg-black/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 z-20">
                     <button
                       type="button"
                       onClick={() => handleMarkWatched(item)}

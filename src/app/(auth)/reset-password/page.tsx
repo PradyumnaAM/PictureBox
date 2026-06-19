@@ -82,6 +82,7 @@ export default function ResetPasswordPage() {
     setServerError(null)
     const { error } = await supabase.auth.updateUser({ password: data.password })
     if (error) { setServerError(error.message); return }
+    router.refresh()
     router.push('/sign-in?message=password-updated')
   }
 

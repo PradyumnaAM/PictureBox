@@ -199,7 +199,7 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
               <>
                 <Link
                   href="/sign-in"
-                  className="hidden h-9 items-center rounded-full border border-ember px-4 font-sans text-sm font-semibold text-ember transition-all hover:bg-ember hover:text-white active:scale-95 md:inline-flex"
+                  className="inline-flex h-9 items-center rounded-full border border-white/20 px-4 font-sans text-sm font-medium text-on-surface-variant transition-all hover:border-ember hover:text-ember active:scale-95"
                 >
                   Sign In
                 </Link>

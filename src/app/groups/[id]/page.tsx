@@ -112,7 +112,8 @@ export default async function GroupDetailPage({ params }: PageProps) {
             <h1 className="text-iris-gradient font-display text-3xl md:text-4xl font-semibold tracking-tight mb-3">{group.name}</h1>
 
             {/* Member avatars */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+              <div className="flex items-center gap-3">
               <div className="flex -space-x-2">
                 {displayMembers.map((member) => {
                   const initial = (
@@ -137,9 +138,10 @@ export default async function GroupDetailPage({ params }: PageProps) {
               <span className="text-on-surface-variant text-sm">
                 {members.length} {members.length === 1 ? 'member' : 'members'}
               </span>
+              </div>
 
-              {/* Invite code */}
-              <span className="ml-auto font-mono text-sm text-ember bg-surface-container px-3 py-1 rounded-full">
+              {/* Invite code — always on its own row on mobile */}
+              <span className="font-mono text-sm text-ember bg-surface-container px-3 py-1 rounded-full self-start sm:ml-auto">
                 Invite friends: {group.invite_code}
               </span>
             </div>

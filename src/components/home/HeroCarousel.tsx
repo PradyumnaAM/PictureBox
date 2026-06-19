@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Check, ChevronLeft, ChevronRight, Play, Plus } from 'lucide-react'
@@ -33,6 +33,7 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
   const [watchlisted, setWatchlisted] = useState<Set<number>>(new Set())
   const [savingIds, setSavingIds] = useState<Set<number>>(new Set())
   const pauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchStartX = useRef<number | null>(null)
 
   // Trailer: open an official YouTube trailer in a new tab when one is
   // available on the carousel item; otherwise fall back to the detail page
@@ -125,6 +126,28 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
     [current, films.length, goTo],
   )
 
+  const handleTouchStart = useCallback((e: TouchEvent<HTMLElement>) => {
+    touchStartX.current = e.touches[0]?.clientX ?? null
+    setPaused(true)
+  }, [])
+
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent<HTMLElement>) => {
+      const startX = touchStartX.current
+      if (startX === null) return
+      const endX = e.changedTouches[0]?.clientX ?? startX
+      const delta = startX - endX
+      if (Math.abs(delta) > 50) {
+        if (delta > 0) goNext()
+        else goPrev()
+      }
+      touchStartX.current = null
+      if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current)
+      pauseTimeoutRef.current = setTimeout(() => setPaused(false), 10000)
+    },
+    [goNext, goPrev],
+  )
+
   if (!films.length) return null
 
   const film = films[current]
@@ -134,6 +157,8 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
       className="relative min-h-screen overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* ── Backdrops (one per film, stacked, crossfade) ── */}
       {films.map((f, i) => {
@@ -198,7 +223,7 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
                 </p>
 
                 {/* Title */}
-                <h1 className="mb-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight text-cream md:text-8xl">
+                <h1 className="mb-5 font-display text-4xl font-semibold leading-[0.95] tracking-tight text-cream sm:text-5xl md:text-8xl">
                   {f.title}
                 </h1>
 
@@ -287,10 +312,11 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
             onClick={() => goTo(i)}
             aria-label={`Go to film ${i + 1}`}
             className={cn(
-              'h-[3px] rounded-full transition-all duration-300',
+              'relative rounded-full transition-all duration-300',
+              'before:absolute before:inset-0 before:-m-3',
               i === current
-                ? 'bg-ember w-10'
-                : 'bg-white/25 w-5 hover:bg-white/50',
+                ? 'bg-ember h-1.5 w-10 sm:h-[3px]'
+                : 'bg-white/25 h-1.5 w-6 hover:bg-white/50 sm:h-[3px] sm:w-5',
             )}
           />
         ))}
