@@ -265,11 +265,6 @@ function DiaryRow({ entry, onEdit }: { entry: DiaryEntry; onEdit: (e: DiaryEntry
 // Grouped TV show row (collapses all episodes into one)
 function TVGroupRow({ group }: { group: TVShowGroup }) {
   const [open, setOpen] = useState(false)
-  const title = group.title
-  if (!title) return null
-
-  const href = entryHref(title)
-  const year = formatReleaseYear(title.release_date)
 
   const sorted = useMemo(
     () =>
@@ -280,6 +275,12 @@ function TVGroupRow({ group }: { group: TVShowGroup }) {
   )
 
   const seasons = useMemo(() => new Set(sorted.map((e) => e.season_number)), [sorted])
+
+  const title = group.title
+  if (!title) return null
+
+  const href = entryHref(title)
+  const year = formatReleaseYear(title.release_date)
   const sameSeason = seasons.size === 1
   const summary = buildEpisodeSummary(group.episodes)
 
