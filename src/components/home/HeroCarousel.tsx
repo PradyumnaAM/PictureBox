@@ -162,8 +162,8 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
       })}
 
       {/* ── Gradient overlays — always above all backdrops ── */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0b0c10] via-[#0b0c10]/45 to-[#0b0c10]/10" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0b0c10]/55 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#060608] via-[#060608]/55 to-[#060608]/10" />
+      <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(6,6,8,0.92)_0%,rgba(6,6,8,0.55)_46%,transparent_78%)]" />
 
       {/* ── Per-film content (fades with its backdrop) ── */}
       {films.map((f, i) => (
@@ -181,58 +181,58 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
               {/* Left: film info + CTAs */}
               <div className="max-w-2xl">
                 {/* Timecode metadata line */}
-                <p className="font-mono text-xs text-cream/80 uppercase tracking-[0.14em] mb-5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <p className="mb-5 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-xs uppercase tracking-[0.12em] text-cream/75">
                   {f.release_date && <span>{formatReleaseYear(f.release_date)}</span>}
                   {f.runtime ? (
                     <>
-                      <span className="text-ember">/</span>
+                      <span className="text-ember/70">·</span>
                       <span>{formatRuntime(f.runtime)}</span>
                     </>
                   ) : null}
                   {f.genres?.slice(0, 3).map((g) => (
-                    <span key={g.id} className="flex items-center gap-3">
-                      <span className="text-ember">/</span>
+                    <span key={g.id} className="flex items-center gap-2.5">
+                      <span className="text-ember/70">·</span>
                       {g.name}
                     </span>
                   ))}
                 </p>
 
                 {/* Title */}
-                <h1 className="font-display text-5xl md:text-7xl text-cream tracking-tight font-semibold leading-[1.02] mb-5">
+                <h1 className="mb-5 font-display text-5xl font-semibold leading-[0.95] tracking-tight text-cream md:text-8xl">
                   {f.title}
                 </h1>
 
                 {/* Overview */}
                 {f.overview && (
-                  <p className="text-on-surface-variant text-lg leading-relaxed max-w-xl line-clamp-2 mb-8">
+                  <p className="mb-8 max-w-xl text-base leading-relaxed text-on-surface-variant line-clamp-2 md:text-lg">
                     {f.overview}
                   </p>
                 )}
 
                 {/* CTAs */}
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => handleTrailer(f)}
-                    className="bg-ember text-background font-label text-label uppercase font-medium px-8 py-3.5 rounded-md flex items-center gap-2 hover:bg-ember-hover active:scale-95 transition-all shadow-ember-glow"
+                    className="btn-iris-gradient flex items-center gap-2 rounded-full px-7 py-3 font-sans text-sm font-semibold text-white transition-all hover:-translate-y-0.5 active:scale-95"
                   >
-                    <Play className="w-4 h-4 fill-current" />
-                    Trailer
+                    <Play className="h-4 w-4 fill-current" />
+                    Watch trailer
                   </button>
                   <button
                     type="button"
                     onClick={() => handleWatchlist(f)}
                     disabled={savingIds.has(f.id) || watchlisted.has(f.id)}
-                    className="bg-white/[0.06] backdrop-blur text-cream font-label text-label uppercase font-medium px-8 py-3.5 rounded-md border border-white/15 hover:bg-white/[0.12] hover:border-white/30 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-60 disabled:active:scale-100"
+                    className="surface-frost flex items-center gap-2 rounded-full border border-white/15 px-7 py-3 font-sans text-sm font-semibold text-cream transition-all hover:border-ember hover:text-ember active:scale-95 disabled:opacity-60 disabled:active:scale-100"
                   >
                     {watchlisted.has(f.id) ? (
                       <>
-                        <Check className="w-4 h-4" />
-                        On Watchlist
+                        <Check className="h-4 w-4" />
+                        On watchlist
                       </>
                     ) : (
                       <>
-                        <Plus className="w-4 h-4" />
+                        <Plus className="h-4 w-4" />
                         Watchlist
                       </>
                     )}
@@ -241,15 +241,15 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
               </div>
 
               {/* Right: community rating (desktop only) */}
-              <div className="hidden md:block shrink-0">
-                <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg p-5 text-center min-w-[150px]">
-                  <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mb-2">
+              <div className="hidden shrink-0 md:block">
+                <div className="surface-frost min-w-[150px] rounded-2xl border border-white/10 p-5 text-center">
+                  <p className="mb-2 font-label text-label uppercase text-on-surface-variant">
                     Rating
                   </p>
-                  <p className="font-display text-5xl text-ember font-semibold leading-none">
+                  <p className="font-mono text-5xl font-semibold leading-none text-ember">
                     {f.vote_average.toFixed(1)}
                   </p>
-                  <p className="font-mono text-[10px] text-on-surface-variant mt-3">
+                  <p className="mt-3 font-mono text-[10px] text-on-surface-variant">
                     {f.vote_count.toLocaleString()} votes
                   </p>
                 </div>
@@ -265,17 +265,17 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
         type="button"
         onClick={goPrev}
         aria-label="Previous film"
-        className="hidden sm:flex absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-md bg-black/40 backdrop-blur-sm border border-white/15 items-center justify-center text-cream hover:bg-ember hover:text-background hover:border-ember transition-all duration-200 active:scale-95"
+        className="surface-frost absolute left-4 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/12 text-cream transition-colors hover:border-ember hover:text-ember active:scale-95 sm:flex md:left-8"
       >
-        <ChevronLeft size={24} />
+        <ChevronLeft size={22} />
       </button>
       <button
         type="button"
         onClick={goNext}
         aria-label="Next film"
-        className="hidden sm:flex absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-md bg-black/40 backdrop-blur-sm border border-white/15 items-center justify-center text-cream hover:bg-ember hover:text-background hover:border-ember transition-all duration-200 active:scale-95"
+        className="surface-frost absolute right-4 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/12 text-cream transition-colors hover:border-ember hover:text-ember active:scale-95 sm:flex md:right-8"
       >
-        <ChevronRight size={24} />
+        <ChevronRight size={22} />
       </button>
 
       {/* ── Progress bars — film-counter style, clear of mobile nav ── */}

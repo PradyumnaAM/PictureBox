@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-export function GET(_req: NextRequest) {
+export function GET() {
   const body = [
     'User-agent: *',
     'Allow: /',

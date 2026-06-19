@@ -24,16 +24,16 @@ export default async function TVPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <header className="pt-32 pb-14 px-4 md:px-16 max-w-page mx-auto">
-        <p className="flex items-center gap-3 font-label text-label uppercase text-ember mb-4">
-          <span aria-hidden className="w-6 h-px bg-ember/50" />
+      <header className="mx-auto max-w-page px-page-x-mobile pb-12 pt-32 md:px-page-x">
+        <p className="mb-4 flex items-center gap-3 font-label text-label uppercase text-ember">
+          <span aria-hidden className="h-px w-8 bg-ember/40" />
           The Index · Television
         </p>
-        <h1 className="font-display text-5xl md:text-7xl font-semibold tracking-tight text-cream leading-none">
+        <h1 className="text-iris-gradient font-display text-6xl font-semibold leading-[0.95] tracking-tight md:text-8xl">
           TV Shows
         </h1>
-        <p className="text-on-surface-variant text-lg mt-5 max-w-md">
-          Every season, <em className="font-display text-cream">every episode</em> — tracked
+        <p className="mt-5 max-w-md text-lg text-on-surface-variant">
+          Every season, <em className="italic text-cream">every episode</em> — tracked
           down to the credits.
         </p>
       </header>

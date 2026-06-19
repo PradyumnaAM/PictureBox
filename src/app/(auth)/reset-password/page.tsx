@@ -31,9 +31,9 @@ type FormData = z.infer<typeof schema>
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const input =
-  'w-full bg-surface-container-high border border-outline-variant rounded-md px-4 py-3 ' +
-  'text-on-surface placeholder:text-on-surface-variant ' +
-  'focus:outline-none focus:border-ember focus:ring-1 focus:ring-ember transition-colors'
+  'w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 ' +
+  'text-on-surface placeholder:text-outline ' +
+  'focus:outline-none focus:border-ember/60 focus:ring-2 focus:ring-ember/20 transition-colors'
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
@@ -89,11 +89,11 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="bg-surface-container/60 backdrop-blur-xl border border-white/10 rounded-xl p-8">
+      <div className="surface-frost rounded-2xl border border-white/10 p-8 shadow-header">
 
         <div className="mb-8">
           <p className="font-label text-label uppercase text-ember mb-3">Members Only</p>
-          <h1 className="font-display text-[1.75rem] font-semibold text-cream mb-1.5">Choose a new password</h1>
+          <h1 className="text-iris-gradient font-display text-[1.75rem] font-semibold tracking-tight mb-1.5">Choose a new password</h1>
           <p className="text-on-surface-variant text-sm">Make it strong.</p>
         </div>
 
@@ -185,7 +185,7 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={form.formState.isSubmitting}
-              className="w-full bg-ember text-black font-label uppercase font-bold py-3 rounded-md hover:bg-ember-hover active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="btn-iris-gradient flex w-full items-center justify-center gap-2 rounded-full py-3 font-sans text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {form.formState.isSubmitting ? (
                 <>

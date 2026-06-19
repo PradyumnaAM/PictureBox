@@ -22,7 +22,7 @@ export default function TrendingTicker({ items }: TrendingTickerProps) {
   const track = [...labels, ...labels]
 
   return (
-    <div className="bg-surface-container/40 border-y border-white/5 py-3 overflow-hidden">
+    <div className="overflow-hidden border-y border-ember/20 bg-black py-3">
       <style>{`
         @keyframes trending-marquee {
           0%   { transform: translateX(0); }
@@ -40,9 +40,9 @@ export default function TrendingTicker({ items }: TrendingTickerProps) {
         {track.map((label, i) => (
           <span
             key={`${label}-${i}`}
-            className="inline-flex items-center gap-2 whitespace-nowrap text-on-surface-variant text-xs uppercase tracking-widest"
+            className="inline-flex items-center gap-2 whitespace-nowrap font-mono text-xs uppercase text-on-surface-variant"
           >
-            <span aria-hidden className="text-ember">●</span>
+            <span aria-hidden className="h-1.5 w-1.5 bg-ember" />
             {label}
           </span>
         ))}

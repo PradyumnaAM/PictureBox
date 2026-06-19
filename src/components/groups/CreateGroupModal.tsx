@@ -56,7 +56,7 @@ export default function CreateGroupModal() {
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={close}
           />
-          <div className="relative bg-surface-container border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="relative w-full max-w-md rounded-lg border border-ember/25 bg-surface-container p-6 shadow-header">
             <button
               type="button"
               onClick={close}

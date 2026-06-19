@@ -118,7 +118,7 @@ export default function PosterWall({ posters }: PosterWallProps) {
           height: 320,
           transform: 'translate(-50%, -50%)',
           borderRadius: '9999px',
-          background: 'radial-gradient(circle, rgba(255,77,46,0.16) 0%, transparent 70%)',
+          background: 'linear-gradient(135deg, rgba(123,97,255,0.16) 0%, transparent 70%)',
           filter: 'blur(46px)',
           pointerEvents: 'none',
         }}
@@ -170,13 +170,13 @@ export default function PosterWall({ posters }: PosterWallProps) {
                     width: '100%',
                     height: '100%',
                     transform: `rotate(${slot.rotate}deg)`,
-                    borderRadius: 12,
+                    borderRadius: 4,
                     overflow: 'hidden',
                     opacity: slot.opacity,
                     filter: slot.blur ? `blur(${slot.blur}px)` : undefined,
                     boxShadow: slot.focus
-                      ? '0 30px 70px -18px rgba(0,0,0,0.85)'
-                      : '0 16px 40px -12px rgba(0,0,0,0.7)',
+                      ? '0 24px 46px -18px rgba(0,0,0,0.85)'
+                      : '0 14px 28px -14px rgba(0,0,0,0.7)',
                   }}
                 >
                   <Image
@@ -203,9 +203,9 @@ export default function PosterWall({ posters }: PosterWallProps) {
                     style={{
                       position: 'absolute',
                       inset: 0,
-                      borderRadius: 12,
+                      borderRadius: 4,
                       boxShadow: slot.focus
-                        ? 'inset 0 0 0 2px rgba(255,77,46,0.55), inset 0 0 34px rgba(255,77,46,0.18)'
+                        ? 'inset 0 0 0 2px rgba(123,97,255,0.65), inset 0 0 28px rgba(123,97,255,0.14)'
                         : 'inset 0 0 0 1px rgba(255,255,255,0.07)',
                     }}
                   />

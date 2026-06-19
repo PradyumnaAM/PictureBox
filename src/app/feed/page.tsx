@@ -271,7 +271,7 @@ export default async function FeedPage() {
                   <span aria-hidden className="w-6 h-px bg-ember/50" />
                   The Reel · Live
                 </p>
-                <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-cream leading-none">
+                <h1 className="text-iris-gradient font-display text-4xl md:text-5xl font-semibold leading-none tracking-tight">
                   Activity
                 </h1>
               </header>
@@ -402,3 +402,4 @@ export default async function FeedPage() {
       </div>
   )
 }
+

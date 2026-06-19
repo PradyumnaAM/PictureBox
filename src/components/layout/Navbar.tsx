@@ -38,6 +38,7 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
   const initial = user?.email?.[0].toUpperCase() ?? 'U'
   const [profileUsername, setProfileUsername] = useState<string | null>(null)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   // Resolve the real profile handle from the profiles table (the auth metadata
   // username can be stale or never set). Falls back to metadata / id below.
@@ -60,8 +61,6 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
     }
   }, [user])
 
-  // Prefer the live profiles.username; fall back to metadata then id so the link
-  // is never empty.
   const profileSlug =
     profileUsername ?? user?.user_metadata?.username ?? user?.id ?? ''
 
@@ -77,147 +76,145 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
     return () => document.removeEventListener('keydown', handler)
   }, [])
 
+  // Frosted elevation only after the page scrolls past the hero edge.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <>
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-background/40 backdrop-blur-2xl backdrop-saturate-[1.8] backdrop-brightness-110 border-b border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.14)]">
-      {/* Liquid-glass sheen — a soft light gradient skimming the top edge */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.10] via-white/[0.02] to-transparent"
-      />
-      <div className="relative max-w-page mx-auto h-full flex items-center justify-between gap-4 px-page-x-mobile md:px-page-x">
+      <header
+        className={`fixed inset-x-0 top-0 z-50 h-16 transition-colors duration-300 ${
+          scrolled
+            ? 'surface-frost border-b border-white/[0.07] shadow-header'
+            : 'border-b border-transparent bg-transparent'
+        }`}
+      >
+        <div className="relative mx-auto flex h-full max-w-page items-center justify-between gap-4 px-page-x-mobile md:px-page-x">
+          {/* ── Left: wordmark + desktop nav ── */}
+          <div className="flex min-w-0 items-center gap-10">
+            <Link
+              href="/"
+              className="group flex items-baseline gap-1.5 shrink-0"
+              aria-label="PictureBox home"
+            >
+              <span className="font-display text-[1.7rem] font-semibold leading-none tracking-tight text-cream transition-colors group-hover:text-ember">
+                PictureBox
+              </span>
+              <span className="mb-1 h-1.5 w-1.5 rounded-full bg-ember transition-transform group-hover:scale-125" />
+            </Link>
 
-        {/* ── Left: wordmark + desktop nav ── */}
-        <div className="flex items-center gap-10 min-w-0">
-          <Link
-            href="/"
-            className="group flex items-baseline shrink-0"
-            aria-label="PictureBox home"
-          >
-            <span className="font-display text-[1.45rem] font-semibold tracking-tight text-cream group-hover:text-ember transition-colors">
-              PictureBox
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-ember ml-1 translate-y-[-1px] group-hover:animate-blink" />
-          </Link>
+            {/* Desktop nav */}
+            {user && (
+              <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+                {NAV_LINKS.map(({ href, label }) => {
+                  const active = isActive(href, activePath)
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`relative rounded-full px-3.5 py-2 font-sans text-sm font-medium transition-colors ${
+                        active
+                          ? 'text-cream'
+                          : 'text-on-surface-variant hover:text-cream'
+                      }`}
+                    >
+                      {label}
+                      {active && (
+                        <span className="absolute inset-x-3.5 -bottom-px h-px bg-ember" />
+                      )}
+                    </Link>
+                  )
+                })}
+              </nav>
+            )}
+          </div>
 
-          {/* Desktop nav — hidden on mobile */}
-          {user && (
-          <nav className="hidden md:flex items-center gap-7" aria-label="Primary">
-            {NAV_LINKS.map(({ href, label }, i) => {
-              const active = isActive(href, activePath)
-              return (
+          {/* ── Right: search + log + avatar ── */}
+          <div className="flex items-center gap-2">
+            {/* Search — only shown to authenticated users */}
+            {user && (
+              <button
+                type="button"
+                aria-label="Search"
+                onClick={() => setIsSearchOpen(true)}
+                className="group flex h-9 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] pl-3 pr-2.5 text-on-surface-variant transition-colors hover:border-white/15 hover:text-cream md:pr-3"
+              >
+                <Search className="h-4 w-4" />
+                <span className="hidden text-sm md:inline">Search</span>
+              </button>
+            )}
+
+            {user ? (
+              <>
+                {/* Log shortcut — logged in, desktop only */}
                 <Link
-                  key={href}
-                  href={href}
-                  className={`group/link flex items-center gap-2 font-label text-label uppercase transition-colors ${
-                    active ? 'text-cream' : 'text-on-surface-variant hover:text-cream'
-                  }`}
+                  href="/diary"
+                  aria-label="Log a film"
+                  className="hidden h-9 w-9 items-center justify-center rounded-full bg-ember text-white transition-all hover:bg-ember-hover active:scale-95 md:flex"
                 >
-                  <span
-                    className={`text-[10px] transition-colors ${
-                      active ? 'text-ember' : 'text-outline group-hover/link:text-ember'
-                    }`}
-                  >
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  {label}
+                  <Pencil className="h-4 w-4" />
                 </Link>
-              )
-            })}
-          </nav>
-          )}
-        </div>
 
-        {/* ── Right: search + log + avatar ── */}
-        <div className="flex items-center gap-3">
-          {/* Search — icon-only button (Ctrl/Cmd+K also opens it) */}
-          <button
-            type="button"
-            aria-label="Search"
-            onClick={() => setIsSearchOpen(true)}
-            className="p-2 text-on-surface-variant hover:text-ember transition-colors"
-          >
-            <Search className="w-5 h-5" />
-          </button>
-
-          {user ? (
-            <>
-              {/* Log shortcut — logged in, desktop only */}
-              <Link
-                href="/diary"
-                aria-label="Log a film"
-                className="hidden md:flex w-9 h-9 rounded-md bg-ember text-background items-center justify-center hover:bg-ember-hover active:scale-95 transition-all"
-              >
-                <Pencil className="w-4 h-4" />
-              </Link>
-
-              {/* Avatar dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  aria-label="Account menu"
-                  className="shrink-0 w-9 h-9 rounded-md bg-surface-container-high border border-white/10 text-cream font-mono text-sm font-medium flex items-center justify-center cursor-pointer hover:border-ember/50 hover:text-ember active:scale-95 transition-all"
+                {/* Avatar dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    aria-label="Account menu"
+                    className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-surface-container-high font-mono text-sm font-medium text-cream transition-all hover:border-ember/60 hover:text-ember active:scale-95"
+                  >
+                    {initial}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="surface-frost w-52 rounded-xl border border-white/10 p-1.5 shadow-header"
+                  >
+                    {[
+                      { label: 'My Profile', path: `/u/${profileSlug}` },
+                      { label: 'My Diary', path: '/diary' },
+                      { label: 'Watchlist', path: '/watchlist' },
+                      { label: 'Settings', path: '/settings' },
+                    ].map((item) => (
+                      <DropdownMenuItem
+                        key={item.label}
+                        onClick={() => router.push(item.path)}
+                        className="cursor-pointer rounded-lg px-3 py-2 text-sm text-on-surface hover:bg-white/[0.06] hover:text-ember"
+                      >
+                        {item.label}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator className="my-1.5 bg-white/10" />
+                    <DropdownMenuItem
+                      onClick={onSignOut}
+                      className="cursor-pointer rounded-lg px-3 py-2 text-sm text-error hover:bg-error/10"
+                    >
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="hidden h-9 items-center rounded-full border border-ember px-4 font-sans text-sm font-semibold text-ember transition-all hover:bg-ember hover:text-white active:scale-95 md:inline-flex"
                 >
-                  {initial}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-52 bg-surface-container-low border border-white/10 rounded-lg p-1 shadow-header"
+                  Sign In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="inline-flex h-9 items-center rounded-full border border-ember px-4 font-sans text-sm font-semibold text-ember transition-all hover:bg-ember hover:text-white active:scale-95"
                 >
-                  <DropdownMenuItem
-                    onClick={() => router.push(`/u/${profileSlug}`)}
-                    className="text-on-surface hover:text-ember hover:bg-surface-container-high px-4 py-2 text-sm cursor-pointer rounded-md"
-                  >
-                    My Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push('/diary')}
-                    className="text-on-surface hover:text-ember hover:bg-surface-container-high px-4 py-2 text-sm cursor-pointer rounded-md"
-                  >
-                    My Diary
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push('/watchlist')}
-                    className="text-on-surface hover:text-ember hover:bg-surface-container-high px-4 py-2 text-sm cursor-pointer rounded-md"
-                  >
-                    Watchlist
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => router.push('/settings')}
-                    className="text-on-surface hover:text-ember hover:bg-surface-container-high px-4 py-2 text-sm cursor-pointer rounded-md"
-                  >
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="my-1 border-white/10" />
-                  <DropdownMenuItem
-                    onClick={onSignOut}
-                    className="text-error hover:bg-error/10 px-4 py-2 text-sm cursor-pointer rounded-md"
-                  >
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/sign-in"
-                className="hidden md:inline-flex items-center h-9 px-4 rounded-md font-label text-label uppercase text-on-surface-variant border border-white/[0.12] hover:border-cream/40 hover:text-cream transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center h-9 px-4 rounded-md font-label text-label uppercase bg-ember text-background font-medium hover:bg-ember-hover active:scale-95 transition-all"
-              >
-                Sign Up
-              </Link>
-            </>
-          )}
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-
-      </div>
-    </header>
-    <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      </header>
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   )
 }

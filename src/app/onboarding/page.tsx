@@ -95,7 +95,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 py-12">
-      <div className="bg-surface-container/60 backdrop-blur-xl border border-white/10 rounded-xl p-8 md:p-12 w-full max-w-2xl">
+      <div className="w-full max-w-2xl rounded-lg border border-ember/25 bg-surface-container p-8 shadow-header md:p-12">
 
         {/* Logo */}
         <p className="font-display text-xl text-ember text-center mb-6">PictureBox</p>

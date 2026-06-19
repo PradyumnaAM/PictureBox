@@ -43,7 +43,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
   function setLoading(id: string, on: boolean) {
     setLoadingIds((prev) => {
       const next = new Set(prev)
-      on ? next.add(id) : next.delete(id)
+      if (on) { next.add(id) } else { next.delete(id) }
       return next
     })
   }
@@ -101,7 +101,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-10 flex-wrap">
         <div>
-          <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-cream">My Watchlist</h1>
+          <h1 className="text-iris-gradient font-display text-4xl md:text-5xl font-semibold tracking-tight">My Watchlist</h1>
           <p className="text-on-surface-variant mt-1">
             {items.length} title{items.length !== 1 ? 's' : ''}
           </p>
@@ -225,3 +225,4 @@ export default function WatchlistClient({ items: initialItems }: Props) {
     </>
   )
 }
+

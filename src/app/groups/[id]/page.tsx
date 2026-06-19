@@ -109,7 +109,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-3">{group.name}</h1>
+            <h1 className="text-iris-gradient font-display text-3xl md:text-4xl font-semibold tracking-tight mb-3">{group.name}</h1>
 
             {/* Member avatars */}
             <div className="flex items-center gap-3 flex-wrap">
@@ -162,3 +162,4 @@ export default async function GroupDetailPage({ params }: PageProps) {
       </div>
   )
 }
+

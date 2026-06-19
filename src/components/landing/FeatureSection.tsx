@@ -10,15 +10,12 @@ interface FeatureSectionProps {
   description: ReactNode
   bullets?: string[]
   visual: ReactNode
-  /** Place the visual on the left on desktop */
-  flip?: boolean
   /** Alternate background band */
   tinted?: boolean
 }
 
 /**
- * Two-column landing section: copy on one side, a product visual on the
- * other. Sections alternate via `flip` and `tinted` for visual rhythm.
+ * Centered landing section: copy leads, the product visual follows beneath it.
  * Each section numbers itself like a film chapter via the .chapter counter.
  */
 export default function FeatureSection({
@@ -27,38 +24,38 @@ export default function FeatureSection({
   description,
   bullets,
   visual,
-  flip = false,
   tinted = false,
 }: FeatureSectionProps) {
   return (
     <section
       className={cn(
         'chapter py-20 md:py-28',
-        tinted && 'bg-surface-container-lowest/70 border-y border-white/[0.04]',
+        tinted && 'bg-surface-container-lowest/35',
       )}
     >
-      <div className="max-w-page mx-auto px-4 md:px-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
-          {/* Copy */}
-          <Reveal className={cn(flip && 'lg:order-2')}>
-            <p className="flex items-center gap-3 font-label text-label uppercase text-ember mb-4">
+      <div className="mx-auto max-w-page px-page-x-mobile md:px-page-x">
+        <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
+          <Reveal className="w-full">
+            <p className="mb-5 flex items-center justify-center gap-3 font-label text-label uppercase text-ember">
               <span className="chapter-num font-mono text-outline" aria-hidden />
-              <span aria-hidden className="w-6 h-px bg-ember/50" />
+              <span aria-hidden className="h-px w-8 bg-ember/40" />
               {eyebrow}
             </p>
-            <h2 className="font-display text-3xl md:text-[2.75rem] text-cream tracking-tight font-semibold leading-[1.1] mb-5">
+            <h2 className="mx-auto mb-6 max-w-4xl font-display text-[2rem] font-semibold leading-[1.05] tracking-tight text-cream md:text-[3.5rem]">
               {title}
             </h2>
-            <div className="text-on-surface-variant text-base md:text-lg leading-relaxed space-y-4">
+            <div className="mx-auto max-w-2xl space-y-4 text-base leading-relaxed text-on-surface-variant md:text-lg">
               {description}
             </div>
             {bullets && bullets.length > 0 && (
-              <ul className="mt-7 space-y-3.5">
+              <ul className="mx-auto mt-9 grid max-w-3xl gap-3 text-left md:grid-cols-3">
                 {bullets.map((b) => (
-                  <li key={b} className="flex items-start gap-3 text-on-surface text-sm md:text-base">
-                    <span className="mt-0.5 w-5 h-5 rounded-full bg-ember-muted flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3 h-3 text-ember" />
+                  <li
+                    key={b}
+                    className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-sm text-on-surface"
+                  >
+                    <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-ember-muted">
+                      <Check className="h-3 w-3 text-ember" />
                     </span>
                     {b}
                   </li>
@@ -67,8 +64,7 @@ export default function FeatureSection({
             )}
           </Reveal>
 
-          {/* Visual */}
-          <Reveal delay={150} className={cn(flip && 'lg:order-1')}>
+          <Reveal delay={150} className="mt-12 w-full">
             {visual}
           </Reveal>
         </div>

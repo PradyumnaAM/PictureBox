@@ -77,7 +77,7 @@ export default async function GroupsPage() {
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
             <div>
-              <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-cream">Group Watchlists</h1>
+              <h1 className="text-iris-gradient font-display text-4xl md:text-5xl font-semibold tracking-tight">Group Watchlists</h1>
               <p className="text-on-surface-variant mt-1">Watch together. Decide together.</p>
             </div>
             <div className="flex gap-3 mt-1">
@@ -138,3 +138,4 @@ export default async function GroupsPage() {
       </div>
   )
 }
+

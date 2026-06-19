@@ -116,7 +116,7 @@ export default function AddToGroupSearch({ groupId }: Props) {
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 bg-surface-container border border-white/10 rounded-xl overflow-hidden shadow-2xl z-40">
+        <div className="absolute left-0 right-0 top-full z-40 mt-1.5 overflow-hidden rounded-lg border border-ember/25 bg-surface-container shadow-header">
           {results.map((result) => {
             const title = result.title ?? result.name ?? ''
             const year = formatReleaseYear(result.release_date ?? result.first_air_date)

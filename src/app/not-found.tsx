@@ -5,17 +5,17 @@ import Link from 'next/link'
 export default function NotFound() {
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center text-center px-4 overflow-hidden">
-      {/* Ember pool of light */}
+      {/* Marquee field */}
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[26rem] rounded-full bg-ember/[0.07] blur-[120px] pointer-events-none"
+        className="absolute inset-x-0 top-0 h-10 cinema-stripes opacity-70"
       />
 
       <p className="relative font-mono text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-6 flex items-center gap-3">
-        <span className="w-2 h-2 rounded-full bg-ember animate-blink" />
+        <span className="h-2 w-2 bg-ember animate-blink" />
         Reel missing
       </p>
-      <p className="relative font-display text-[8rem] md:text-[11rem] text-cream font-semibold leading-none tracking-tight">
+      <p className="relative font-display text-[8rem] md:text-[11rem] text-cream font-semibold leading-none">
         4<em className="text-ember">0</em>4
       </p>
       <h1 className="relative font-display text-2xl text-cream font-semibold mt-6 mb-3">
@@ -26,7 +26,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="relative bg-ember text-background font-label text-label uppercase font-medium px-8 py-3.5 rounded-md hover:bg-ember-hover active:scale-95 transition-all shadow-ember-glow"
+        className="relative rounded-md bg-ember px-8 py-3.5 font-mono text-xs font-bold uppercase text-black transition-colors hover:bg-ember-hover active:scale-95"
       >
         Back to the lobby
       </Link>
@@ -37,3 +37,4 @@ export default function NotFound() {
     </div>
   )
 }
+

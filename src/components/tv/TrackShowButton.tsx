@@ -135,7 +135,7 @@ function TrackShowModal({
       className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-surface-container rounded-2xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-ember/25 bg-surface-container p-8 shadow-header">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-6">

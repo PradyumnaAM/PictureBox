@@ -32,17 +32,17 @@ export default function CategoryView({
       <header className="pt-32 pb-12 px-4 md:px-16 max-w-page mx-auto">
         <Link
           href={backHref}
-          className="group inline-flex items-center gap-2 font-label text-label uppercase text-on-surface-variant hover:text-ember transition-colors mb-8"
+          className="group mb-8 inline-flex items-center gap-2 font-mono text-xs uppercase text-on-surface-variant transition-colors hover:text-ember"
         >
           <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
           {backLabel}
         </Link>
 
-        <p className="flex items-center gap-3 font-label text-label uppercase text-ember mb-4">
+        <p className="mb-4 flex items-center gap-3 font-mono text-xs uppercase text-ember">
           <span aria-hidden className="w-6 h-px bg-ember/50" />
           {kicker}
         </p>
-        <h1 className="font-display text-5xl md:text-7xl font-semibold tracking-tight text-cream leading-none">
+        <h1 className="font-display text-6xl font-bold leading-none text-cream md:text-8xl">
           {title}
         </h1>
         <p className="text-on-surface-variant text-lg mt-5 font-mono">
@@ -58,6 +58,7 @@ export default function CategoryView({
               item={item}
               index={index}
               linkPrefix={linkPrefix}
+              magnet
             />
           ))}
         </div>

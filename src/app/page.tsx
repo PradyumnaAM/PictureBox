@@ -2,9 +2,7 @@ import type { Metadata } from 'next'
 
 import { getGenres, getMovie, getPopularMovies, getTrending } from '@/lib/tmdb/client'
 import { createClient } from '@/lib/supabase/server'
-import type { TMDBSearchResult } from '@/types/tmdb'
 
-import LandingPage from '@/components/landing/LandingPage'
 import HeroCarousel from '@/components/home/HeroCarousel'
 import PosterRow, { type PosterItem } from '@/components/home/PosterRow'
 import Footer from '@/components/layout/Footer'
@@ -21,28 +19,6 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // ── Logged out → marketing landing page ────────────────────────────────
-  if (!user) {
-    const [trendingMovies, trendingTV] = await Promise.all([
-      getTrending('movie', 'day'),
-      getTrending('tv', 'week'),
-    ])
-
-    // Interleave movies and TV so the wall and ticker mix both.
-    const allTitles: TMDBSearchResult[] = []
-    const maxLen = Math.max(trendingMovies.length, trendingTV.length)
-    for (let i = 0; i < maxLen; i++) {
-      if (trendingMovies[i]) allTitles.push(trendingMovies[i])
-      if (trendingTV[i]) allTitles.push(trendingTV[i])
-    }
-
-    const posterTitles = allTitles.filter((t) => t.poster_path).slice(0, 12)
-    const tickerTitles = allTitles.filter((t) => t.title ?? t.name).slice(0, 10)
-
-    return <LandingPage posters={posterTitles} tickerItems={tickerTitles} />
-  }
-
-  // ── Logged in → browse home ─────────────────────────────────────────────
   const [trendingMovies, popularMoviesData, trendingTV, allGenres] = await Promise.all([
     getTrending('movie', 'day'),
     getPopularMovies(),
@@ -77,11 +53,11 @@ export default async function HomePage() {
       <HeroCarousel films={heroFilms} />
 
       <section className="py-12 md:py-16">
-        <PosterRow title="In Theaters" items={theaterItems} href="/films" linkPrefix="/film" />
+        <PosterRow title="In Theaters" items={theaterItems} href={user ? '/films' : '/sign-in'} linkPrefix="/film" />
       </section>
 
       <section className="py-12 md:py-16 bg-surface-container-lowest/60">
-        <PosterRow title="Trending TV" items={tvItems} href="/tv" linkPrefix="/tv" />
+        <PosterRow title="Trending TV" items={tvItems} href={user ? '/tv' : '/sign-in'} linkPrefix="/tv" />
       </section>
 
       <Footer />

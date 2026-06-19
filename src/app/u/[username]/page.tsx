@@ -138,7 +138,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
             {/* Text */}
             <div>
-              <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream">
+              <h1 className="text-iris-gradient font-display text-3xl md:text-4xl font-semibold tracking-tight">
                 {profile.display_name ?? profile.username}
               </h1>
               <p className="font-mono text-xs text-on-surface-variant mt-1.5">@{profile.username}</p>
@@ -217,3 +217,4 @@ export default async function UserProfilePage({ params }: PageProps) {
     </div>
   )
 }
+

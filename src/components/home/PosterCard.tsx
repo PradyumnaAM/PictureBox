@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Film, Star } from 'lucide-react'
 
+import Magnet from '@/components/motion/Magnet'
 import { slugify, formatReleaseYear, getPosterUrl } from '@/lib/tmdb/helpers'
 import { cn } from '@/lib/utils'
 
@@ -24,73 +25,76 @@ interface PosterCardProps {
   className?: string
   /** Responsive `sizes` hint for the poster image. */
   sizes?: string
+  /** Add a subtle magnetic mouse-follow to the poster (desktop only). */
+  magnet?: boolean
 }
 
 export default function PosterCard({
   item,
-  index,
+  index: _index,
   linkPrefix,
   className,
   sizes = '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw',
+  magnet = false,
 }: PosterCardProps) {
   const posterUrl = getPosterUrl(item.poster_path, 'md')
   const year = formatReleaseYear(item.release_date)
   const rating = item.vote_average
   const slug = slugify(item.id, item.title)
 
-  return (
-    <Link
-      href={`${linkPrefix}/${slug}`}
-      className={cn('group block cursor-pointer', className)}
-    >
-      {/* Poster image */}
-      <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-3 ring-1 ring-white/[0.06] group-hover:ring-ember/70 group-hover:-translate-y-2 group-hover:shadow-ember-glow transition-all duration-500">
+  const frame = (
+    <div className="poster-frame relative mb-3 aspect-[2/3] overflow-hidden transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:shadow-ember-glow">
         {posterUrl ? (
           <Image
             src={posterUrl}
             alt={item.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
             sizes={sizes}
           />
         ) : (
-          <div className="w-full h-full bg-surface-container flex items-center justify-center">
-            <Film className="w-10 h-10 text-outline" />
+          <div className="flex h-full w-full items-center justify-center bg-surface-container">
+            <Film className="h-10 w-10 text-outline" />
           </div>
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-poster-overlay" />
+        {/* Gradient overlay — deepens on hover for legibility */}
+        <div className="absolute inset-0 bg-poster-overlay opacity-80 transition-opacity duration-500 group-hover:opacity-100" />
 
-        {/* Bottom: year + community rating */}
-        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-1">
-          {year && (
-            <span className="bg-black/65 backdrop-blur-sm text-cream font-mono text-[10px] px-1.5 py-0.5 rounded">
-              {year}
-            </span>
-          )}
-          {rating > 0 && (
-            <span className="flex items-center gap-1 bg-black/65 backdrop-blur-sm text-ember font-mono text-[10px] px-1.5 py-0.5 rounded">
-              <Star className="w-2.5 h-2.5 fill-ember stroke-none" />
-              {rating.toFixed(1)}
-            </span>
-          )}
-        </div>
+        {/* Gold ring on hover */}
+        <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-transparent transition-colors duration-300 group-hover:ring-ember/50" />
+
+        {/* Rating — top-right, fades in on hover */}
+        {rating > 0 && (
+          <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full border border-white/10 bg-black/70 px-2 py-0.5 font-mono text-[10px] text-ember opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+            <Star className="h-2.5 w-2.5 fill-ember stroke-none" />
+            {rating.toFixed(1)}
+          </span>
+        )}
       </div>
+  )
 
-      {/* Index + title + meta below poster */}
-      <div className="flex items-baseline gap-2">
-        <span className="font-mono text-[10px] text-outline group-hover:text-ember transition-colors shrink-0">
-          {String(index + 1).padStart(2, '0')}
-        </span>
-        <div className="min-w-0">
-          <p className="font-sans font-medium text-sm truncate text-on-surface group-hover:text-cream transition-colors">
-            {item.title}
-          </p>
-          <p className="text-on-surface-variant text-xs mt-0.5 truncate">
-            {[year, item.genre_names[0]].filter(Boolean).join(' · ')}
-          </p>
-        </div>
+  return (
+    <Link
+      href={`${linkPrefix}/${slug}`}
+      className={cn('group block cursor-pointer', className)}
+    >
+      {magnet ? (
+        <Magnet padding={40} strength={6}>
+          {frame}
+        </Magnet>
+      ) : (
+        frame
+      )}
+
+      {/* Title + meta below poster */}
+      <div className="min-w-0">
+        <p className="truncate font-sans text-sm font-medium text-on-surface transition-colors group-hover:text-ember">
+          {item.title}
+        </p>
+        <p className="mt-0.5 truncate font-mono text-[11px] text-on-surface-variant">
+          {[year, item.genre_names[0]].filter(Boolean).join('  ·  ')}
+        </p>
       </div>
     </Link>
   )

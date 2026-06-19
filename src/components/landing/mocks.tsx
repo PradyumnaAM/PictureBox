@@ -22,9 +22,8 @@ function MockCard({
   return (
     <div
       className={cn(
-        'bg-surface-container/70 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 md:p-6',
-        'shadow-[0_24px_64px_-16px_rgba(0,0,0,0.6)]',
-        'transition-all duration-500 hover:border-ember/20 hover:shadow-ember-glow',
+        'rounded-2xl border border-white/[0.08] bg-surface-container/80 p-4 shadow-poster backdrop-blur-sm md:p-5',
+        'transition-colors duration-200 hover:border-ember/40',
         className,
       )}
     >
@@ -143,7 +142,7 @@ export function DiaryMock() {
         {DIARY_ROWS.map((row) => (
           <div
             key={row.title}
-            className="flex items-center gap-3.5 bg-surface-container-high/50 border border-white/[0.05] rounded-xl p-3"
+            className="flex items-center gap-3.5 rounded-md border border-white/[0.06] bg-surface-container-high/55 p-3"
           >
             <PosterThumb title={row.title} posterPath={row.posterPath} />
             <div className="flex-1 min-w-0">
@@ -238,7 +237,7 @@ export function StatsMock() {
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-surface-container-high/50 border border-white/[0.05] rounded-xl py-4 text-center"
+            className="rounded-md border border-white/[0.06] bg-surface-container-high/55 py-4 text-center"
           >
             <p className="font-display text-2xl md:text-3xl text-ember font-semibold">{s.value}</p>
             <p className="text-[11px] text-on-surface-variant uppercase tracking-widest mt-1">
@@ -291,7 +290,7 @@ export function FeedMock() {
         {FEED_ROWS.map((row) => (
           <div
             key={row.name}
-            className="flex items-start gap-3 bg-surface-container-high/50 border border-white/[0.05] rounded-xl p-3"
+            className="flex items-start gap-3 rounded-md border border-white/[0.06] bg-surface-container-high/55 p-3"
           >
             <div className="w-8 h-8 rounded-full bg-ember text-black text-xs font-bold flex items-center justify-center flex-shrink-0">
               {row.initial}
@@ -323,7 +322,7 @@ export function FeedMock() {
 /* ─── 5. Group watchlist ────────────────────────────────────────────────── */
 
 const GROUP_ITEMS = [
-  { letter: 'H', hue: '#ff4d2e', title: 'Heat', votes: 4, top: true },
+  { letter: 'H', hue: '#7b61ff', title: 'Heat', votes: 4, top: true },
   { letter: 'C', hue: '#7eb8a4', title: 'Children of Men', votes: 3, top: false },
   { letter: 'O', hue: '#b07ec4', title: 'Oldboy', votes: 1, top: false },
 ]
@@ -350,7 +349,7 @@ export function GroupMock() {
           <div
             key={item.title}
             className={cn(
-              'flex items-center gap-3 rounded-xl p-3 border',
+                'flex items-center gap-3 rounded-md p-3 border',
               item.top
                 ? 'bg-ember-muted border-ember/30'
                 : 'bg-surface-container-high/50 border-white/[0.05]',
@@ -370,7 +369,7 @@ export function GroupMock() {
             </div>
             <span
               className={cn(
-                'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0',
+                'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded flex-shrink-0',
                 item.top ? 'bg-ember text-black' : 'bg-white/[0.07] text-on-surface-variant',
               )}
             >
@@ -414,7 +413,7 @@ export function StreamingMock() {
           <div
             key={s.name}
             className={cn(
-              'flex items-center gap-2.5 rounded-xl border p-2.5',
+              'flex items-center gap-2.5 rounded-md border p-2.5',
               s.available
                 ? 'bg-surface-container-high/60 border-white/[0.08]'
                 : 'bg-surface-container-high/20 border-white/[0.03] opacity-45',
@@ -453,7 +452,7 @@ const SEARCH_RESULTS = [
 export function SearchMock() {
   return (
     <MockCard>
-      <div className="flex items-center gap-3 bg-surface-container-high/70 border border-white/[0.08] rounded-xl px-4 py-3 mb-3">
+      <div className="mb-3 flex items-center gap-3 rounded-md border border-white/[0.08] bg-surface-container-high/70 px-4 py-3">
         <Search className="w-4 h-4 text-on-surface-variant flex-shrink-0" />
         <span className="text-sm text-on-surface">
           blade runner
@@ -467,7 +466,7 @@ export function SearchMock() {
         {SEARCH_RESULTS.map((r) => (
           <div
             key={r.title}
-            className="flex items-center gap-3 rounded-xl p-2.5 hover:bg-white/[0.04] transition-colors"
+            className="flex items-center gap-3 rounded-md p-2.5 transition-colors hover:bg-white/[0.04]"
           >
             <PosterThumb title={r.title} posterPath={posterPathByTitle[r.title]} className="w-9 h-12" />
             <div className="flex-1 min-w-0">

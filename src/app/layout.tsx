@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Fraunces, Instrument_Sans, Spline_Sans_Mono } from 'next/font/google'
+import { Fraunces, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
 import { Toaster } from 'sonner'
@@ -7,30 +7,35 @@ import { Toaster } from 'sonner'
 import NavbarWrapper from '@/components/layout/NavbarWrapper'
 import MobileNav from '@/components/layout/MobileNav'
 
-const fraunces = Fraunces({
+/* Display — a characterful, high-contrast variable serif for editorial titles. */
+const displayFont = Fraunces({
   subsets: ['latin'],
-  variable: '--font-fraunces',
+  variable: '--font-display',
   display: 'swap',
   style: ['normal', 'italic'],
-  axes: ['SOFT', 'WONK', 'opsz'],
+  axes: ['opsz', 'SOFT', 'WONK'],
 })
 
-const instrument = Instrument_Sans({
+/* UI — a clean neutral grotesque for body, controls, and navigation. */
+const sansFont = Inter({
   subsets: ['latin'],
-  variable: '--font-instrument',
+  variable: '--font-sans',
   display: 'swap',
+  weight: ['400', '500', '600', '700'],
 })
 
-const splineMono = Spline_Sans_Mono({
+/* Data — monospaced "catalogue numbers": ratings, years, stats, shortcuts. */
+const monoFont = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-spline-mono',
+  variable: '--font-mono',
   display: 'swap',
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
   title: {
-    default: 'PictureBox — Every film. Every episode.',
-    template: '%s — PictureBox',
+    default: 'PictureBox | Every film. Every episode.',
+    template: '%s | PictureBox',
   },
   description: 'Track every film and every episode. The social tracker for serious cinephiles.',
   icons: {
@@ -40,14 +45,14 @@ export const metadata: Metadata = {
   },
   keywords: ['film tracker', 'movie tracker', 'TV tracker', 'letterboxd alternative', 'film diary'],
   openGraph: {
-    title: 'PictureBox — Every film. Every episode.',
+    title: 'PictureBox | Every film. Every episode.',
     description: 'Track every film and every episode.',
     type: 'website',
     siteName: 'PictureBox',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PictureBox — Every film. Every episode.',
+    title: 'PictureBox | Every film. Every episode.',
     description: 'Track every film and every episode.',
   },
   robots: {
@@ -64,7 +69,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${fraunces.variable} ${instrument.variable} ${splineMono.variable} font-sans bg-background text-on-surface antialiased`}
+        className={`${displayFont.variable} ${sansFont.variable} ${monoFont.variable} font-sans bg-background text-on-surface antialiased`}
       >
         <NavbarWrapper />
         {/* Hero pages manage their own top spacing. Bottom-nav clearance is handled
@@ -73,7 +78,7 @@ export default function RootLayout({
           {children}
         </main>
         <MobileNav />
-        {/* Film-grain overlay — sits above everything, never intercepts input */}
+        {/* Film grain overlay sits above everything and never intercepts input. */}
         <div aria-hidden className="grain" />
         <Toaster position="bottom-right" theme="dark" />
       </body>

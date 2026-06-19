@@ -1,30 +1,46 @@
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen bg-background flex flex-col overflow-hidden">
-      {/* Ember pool of light + sprocket strips frame the lobby */}
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-surface-container-lowest">
+      {/* Soft overhead house-light + a single gold hairline across the top */}
       <div
         aria-hidden
-        className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 w-[44rem] h-[28rem] rounded-full bg-ember/[0.06] blur-[130px] pointer-events-none"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_-10%,rgba(123,97,255,0.08)_0%,transparent_55%)]"
       />
-      <div aria-hidden className="sprockets absolute top-4 inset-x-0 opacity-50" />
-      <div aria-hidden className="sprockets absolute bottom-4 inset-x-0 opacity-50" />
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/40 to-transparent"
+      />
 
       {/* Logo */}
-      <div className="relative px-6 py-6 shrink-0">
-        <Link href="/" className="group inline-flex items-baseline" aria-label="PictureBox home">
-          <span className="font-display text-2xl font-semibold tracking-tight text-cream group-hover:text-ember transition-colors">
+      <div className="relative z-10 shrink-0 px-page-x-mobile py-6 md:px-10">
+        <Link
+          href="/"
+          className="group inline-flex items-baseline gap-1.5"
+          aria-label="PictureBox home"
+        >
+          <span className="font-display text-2xl font-semibold leading-none tracking-tight text-cream transition-colors group-hover:text-ember">
             PictureBox
           </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-ember ml-1" />
+          <span className="mb-1 h-1.5 w-1.5 rounded-full bg-ember" />
         </Link>
       </div>
 
       {/* Vertically + horizontally centred content */}
-      <div className="relative flex-1 flex items-center justify-center px-4 py-8">
+      <div className="relative z-10 flex flex-1 items-center justify-center px-page-x-mobile py-8">
         {children}
       </div>
+
+      {/* Oversized ghost wordmark bleeding off the bottom */}
+      <p
+        aria-hidden
+        className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 select-none whitespace-nowrap font-display text-[clamp(5rem,16vw,15rem)] font-semibold leading-none tracking-tight text-white/[0.02]"
+      >
+        PictureBox
+      </p>
     </div>
   )
 }

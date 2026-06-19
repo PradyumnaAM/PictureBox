@@ -37,20 +37,20 @@ export default async function DiaryPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: logs } = await (adminClient as any)
     .from('user_logs')
-    .select('*, titles(*)')
+    .select('id, log_type, status, rating, review, watched_at, created_at, rewatch, contains_spoilers, titles(*), season:seasons(season_number), episode:episodes(episode_number)')
     .eq('user_id', user.id)
     .is('deleted_at', null)
     .not('status', 'eq', 'want_to_watch')
     .order('watched_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
-    .limit(200)
+    .limit(500)
 
   const entries = (logs ?? []) as DiaryEntry[]
 
   return (
     <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-4xl mx-auto px-4 md:px-8">
-          <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-cream">My Diary</h1>
+          <h1 className="text-iris-gradient font-display text-4xl md:text-5xl font-semibold tracking-tight">My Diary</h1>
           <p className="text-on-surface-variant mt-1 mb-8">
             {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
           </p>
@@ -60,3 +60,4 @@ export default async function DiaryPage() {
       </div>
   )
 }
+

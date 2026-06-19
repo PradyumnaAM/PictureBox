@@ -52,20 +52,20 @@ export default function PosterRow({
   return (
     <div className="max-w-page mx-auto">
       {/* Section header — editorial: title, rule line, reel count */}
-      <div className="flex items-baseline gap-5 mb-7 px-4 md:px-16">
-        <h2 className="font-display text-headline md:text-3xl text-cream shrink-0">
+      <div className="mb-6 flex items-baseline gap-5 px-page-x-mobile md:px-page-x">
+        <h2 className="shrink-0 font-display text-2xl font-semibold leading-none tracking-tight text-cream md:text-[1.75rem]">
           {title}
         </h2>
-        <span aria-hidden className="hidden sm:block flex-1 h-px bg-white/[0.08] translate-y-[-4px]" />
-        <span className="hidden sm:block font-mono text-xs text-outline shrink-0">
-          {String(items.length).padStart(2, '0')} titles
+        <span aria-hidden className="hidden h-px flex-1 bg-white/[0.08] sm:block" />
+        <span className="hidden shrink-0 font-mono text-xs text-outline sm:block">
+          {String(items.length).padStart(2, '0')}
         </span>
         <Link
           href={href}
-          className="group flex items-center gap-1.5 font-label text-label uppercase text-on-surface-variant hover:text-ember transition-colors shrink-0"
+          className="group flex shrink-0 items-center gap-1.5 font-sans text-xs font-medium text-on-surface-variant transition-colors hover:text-ember"
         >
-          See All
-          <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+          See all
+          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
 
@@ -76,7 +76,7 @@ export default function PosterRow({
           type="button"
           onClick={handleScrollLeft}
           aria-label="Scroll left"
-          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-md bg-surface-container/90 backdrop-blur border border-white/10 flex items-center justify-center text-on-surface hover:bg-ember hover:text-background hover:border-ember transition-all duration-200 active:scale-95"
+          className="surface-frost absolute left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 text-on-surface transition-colors hover:border-ember hover:text-ember active:scale-95 md:left-4 md:flex"
         >
           <ChevronLeft size={20} />
         </button>
@@ -84,7 +84,7 @@ export default function PosterRow({
         {/* Scrollable card row */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth px-14 pb-4"
+          className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth px-page-x-mobile py-4 md:px-14"
         >
           {items.map((item, index) => (
             <PosterCard
@@ -94,20 +94,21 @@ export default function PosterRow({
               linkPrefix={linkPrefix}
               className="flex-none w-52 snap-start"
               sizes="208px"
+              magnet
             />
           ))}
         </div>
 
         {/* Edge fade masks — above cards (z-5), below arrows (z-10) */}
-        <div className="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-background to-transparent pointer-events-none z-[5]" />
-        <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-background to-transparent pointer-events-none z-[5]" />
+        <div className="pointer-events-none absolute left-0 top-0 z-[5] h-full w-24 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 z-[5] h-full w-24 bg-gradient-to-l from-background to-transparent" />
 
         {/* Right arrow */}
         <button
           type="button"
           onClick={handleScrollRight}
           aria-label="Scroll right"
-          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-md bg-surface-container/90 backdrop-blur border border-white/10 flex items-center justify-center text-on-surface hover:bg-ember hover:text-background hover:border-ember transition-all duration-200 active:scale-95"
+          className="surface-frost absolute right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 text-on-surface transition-colors hover:border-ember hover:text-ember active:scale-95 md:right-4 md:flex"
         >
           <ChevronRight size={20} />
         </button>

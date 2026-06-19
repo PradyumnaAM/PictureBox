@@ -55,7 +55,7 @@ export default function GroupItemsList({
   function setLoading(id: string, on: boolean) {
     setLoadingIds((prev) => {
       const next = new Set(prev)
-      on ? next.add(id) : next.delete(id)
+      if (on) { next.add(id) } else { next.delete(id) }
       return next
     })
   }
@@ -68,7 +68,7 @@ export default function GroupItemsList({
     // Optimistic update
     setVotedIds((prev) => {
       const next = new Set(prev)
-      hadVoted ? next.delete(itemId) : next.add(itemId)
+      if (hadVoted) { next.delete(itemId) } else { next.add(itemId) }
       return next
     })
     setLocalItems((prev) =>
@@ -91,7 +91,7 @@ export default function GroupItemsList({
       // Revert
       setVotedIds((prev) => {
         const next = new Set(prev)
-        hadVoted ? next.add(itemId) : next.delete(itemId)
+        if (hadVoted) { next.add(itemId) } else { next.delete(itemId) }
         return next
       })
       setLocalItems((prev) =>

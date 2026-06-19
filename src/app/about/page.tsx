@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
+import AnimatedText from '@/components/motion/AnimatedText'
+import FadeIn from '@/components/motion/FadeIn'
 import Footer from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
@@ -16,21 +18,20 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto px-4 md:px-8">
 
           {/* ── Hero ───────────────────────────────────────────────────────── */}
-          <div>
-            <h1 className="font-display text-5xl text-on-surface">PictureBox</h1>
+          <FadeIn y={30}>
+            <h1 className="text-iris-gradient font-display text-5xl font-semibold tracking-tight">PictureBox</h1>
             <p className="text-on-surface-variant text-xl mt-2">The Discerning Curator.</p>
-          </div>
+          </FadeIn>
 
           <hr className="mt-8 border-white/10" />
 
           {/* ── About ──────────────────────────────────────────────────────── */}
           <section className="mt-10">
             <h2 className="font-display text-2xl font-semibold text-cream mb-4">What is PictureBox?</h2>
-            <p className="text-on-surface-variant leading-relaxed mb-4">
-              PictureBox is a film and TV social tracker built for people who take their watching
-              seriously. Log every film, every season, every episode — and see your stats grow in
-              real time. No paywalls. No freemium gates. Everything is free, forever.
-            </p>
+            <AnimatedText
+              text="PictureBox is a film and TV social tracker built for people who take their watching seriously. Log every film, every season, every episode — and see your stats grow in real time. No paywalls. No freemium gates. Everything is free, forever."
+              className="text-on-surface leading-relaxed mb-4"
+            />
             <p className="text-on-surface-variant leading-relaxed mb-4">
               Existing trackers do films well but TV poorly, or vice versa. PictureBox was built
               to solve that: a single home for your entire watching life, with episode-level

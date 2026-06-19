@@ -206,7 +206,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       onClick={onClose}
     >
       <div
-        className="absolute top-[10%] left-1/2 -translate-x-1/2 w-full max-w-2xl bg-surface-container-high rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+        className="absolute left-1/2 top-[10%] w-full max-w-2xl -translate-x-1/2 overflow-hidden rounded-lg border border-ember/25 bg-surface-container-high shadow-header"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Search input ── */}

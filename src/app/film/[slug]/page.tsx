@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Play } from 'lucide-react'
 
 import { getMovie } from '@/lib/tmdb/client'
 import { createClient } from '@/lib/supabase/server'
@@ -186,37 +187,37 @@ export default async function FilmPage({ params }: PageProps) {
             {/* Left: info + CTAs */}
             <div className="flex-1 min-w-0">
               {/* Timecode metadata line */}
-              <p className="font-mono text-xs text-cream/80 uppercase tracking-[0.14em] mb-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <p className="mb-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-xs uppercase tracking-[0.12em] text-cream/75">
                 {year && <span>{year}</span>}
                 {movie.runtime > 0 && (
                   <>
-                    <span className="text-ember">/</span>
+                    <span className="text-ember/70">·</span>
                     <span>{formatRuntime(movie.runtime)}</span>
                   </>
                 )}
                 {movie.genres?.slice(0, 3).map((g) => (
-                  <span key={g.id} className="flex items-center gap-3">
-                    <span className="text-ember">/</span>
+                  <span key={g.id} className="flex items-center gap-2.5">
+                    <span className="text-ember/70">·</span>
                     {g.name}
                   </span>
                 ))}
               </p>
 
               {/* Title */}
-              <h1 className="font-display text-4xl md:text-6xl text-cream font-semibold tracking-tight leading-[1.04] mb-3">
+              <h1 className="mb-3 font-display text-4xl font-semibold leading-[0.98] tracking-tight text-cream md:text-7xl">
                 {movie.title}
               </h1>
 
               {/* Tagline */}
               {movie.tagline && (
-                <p className="font-display italic text-on-surface-variant text-lg mb-2">
+                <p className="mb-2 font-display text-lg italic text-on-surface-variant">
                   {movie.tagline}
                 </p>
               )}
 
               {/* Director */}
               {director && (
-                <p className="font-mono text-xs uppercase tracking-[0.14em] text-on-surface-variant mb-6">
+                <p className="mb-6 font-mono text-xs uppercase tracking-[0.12em] text-on-surface-variant">
                   Directed by <span className="text-cream">{director.name}</span>
                 </p>
               )}
@@ -246,9 +247,10 @@ export default async function FilmPage({ params }: PageProps) {
                     href={`https://youtube.com/watch?v=${trailerKey}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-surface-container/60 backdrop-blur border border-white/20 text-white font-label uppercase font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-white/10 transition-all active:scale-95"
+                    className="surface-frost flex items-center gap-2 rounded-full border border-white/15 px-6 py-3 font-sans text-sm font-semibold text-cream transition-all hover:border-ember hover:text-ember active:scale-95"
                   >
-                    ▶ Trailer
+                    <Play className="h-4 w-4 fill-current" />
+                    Trailer
                   </a>
                 )}
               </div>
@@ -256,23 +258,23 @@ export default async function FilmPage({ params }: PageProps) {
               {!user && (
                 <Link
                   href="/sign-in"
-                  className="text-on-surface-variant text-sm hover:text-gold transition mt-3 inline-block"
+                  className="mt-3 inline-block text-sm text-on-surface-variant transition hover:text-ember"
                 >
-                  Sign in to track this film →
+                  Sign in to track this film
                 </Link>
               )}
             </div>
 
             {/* Right: community rating (desktop only) */}
-            <div className="hidden md:block shrink-0">
-              <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg p-6 min-w-[200px] text-center">
-                <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-[0.16em] mb-2">
+            <div className="hidden shrink-0 md:block">
+              <div className="surface-frost min-w-[180px] rounded-2xl border border-white/10 p-6 text-center">
+                <p className="mb-2 font-label text-label uppercase text-on-surface-variant">
                   Rating
                 </p>
-                <p className="font-display text-5xl font-semibold text-ember leading-none">
+                <p className="font-mono text-5xl font-semibold leading-none text-ember">
                   {movie.vote_average.toFixed(1)}
                 </p>
-                <p className="font-mono text-[10px] text-on-surface-variant mt-3">
+                <p className="mt-3 font-mono text-[10px] text-on-surface-variant">
                   {movie.vote_count.toLocaleString()} votes
                 </p>
               </div>
@@ -496,3 +498,4 @@ export default async function FilmPage({ params }: PageProps) {
     </>
   )
 }
+

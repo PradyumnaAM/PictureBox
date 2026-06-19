@@ -59,7 +59,7 @@ export default async function SettingsPage() {
   return (
     <div className="bg-background min-h-screen pt-28 pb-16">
         <div className="max-w-3xl mx-auto px-4 md:px-8">
-          <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-8">Settings</h1>
+          <h1 className="text-iris-gradient font-display text-3xl md:text-4xl font-semibold tracking-tight mb-8">Settings</h1>
 
           <ProfileSettings profile={profile} />
           <StreamingSettings profile={profile} />
@@ -69,3 +69,4 @@ export default async function SettingsPage() {
       </div>
   )
 }
+

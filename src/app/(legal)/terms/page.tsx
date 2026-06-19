@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: 'Terms of Service — PictureBox' }
 export default function TermsPage() {
   return (
     <div className="text-on-surface leading-relaxed">
-      <h1 className="font-display text-3xl md:text-4xl font-semibold tracking-tight text-cream mb-2">Terms of Service</h1>
+      <h1 className="text-iris-gradient font-display text-3xl md:text-4xl font-semibold tracking-tight mb-2">Terms of Service</h1>
       <span className="text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded-full mb-8 inline-block">
         Last updated: June 2026
       </span>
@@ -131,3 +131,4 @@ export default function TermsPage() {
     </div>
   )
 }
+

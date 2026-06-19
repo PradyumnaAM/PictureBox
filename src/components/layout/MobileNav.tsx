@@ -56,7 +56,7 @@ export default function MobileNav() {
           renders (authenticated, non-auth routes), and only on mobile. */}
       <div aria-hidden className="md:hidden h-16" />
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-background/85 backdrop-blur-xl border-t border-white/[0.07]"
+        className="surface-frost fixed bottom-0 left-0 right-0 z-50 h-16 border-t border-white/[0.07] pb-[env(safe-area-inset-bottom)] md:hidden"
         aria-label="Mobile navigation"
       >
       <div className="h-full flex items-center justify-around px-2">
@@ -66,19 +66,19 @@ export default function MobileNav() {
             <Link
               key={href}
               href={href}
-              className={`relative flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
-                active ? 'text-cream' : 'text-on-surface-variant'
+              className={`relative flex h-full flex-1 flex-col items-center justify-center gap-1 transition-colors ${
+                active ? 'text-ember' : 'text-on-surface-variant'
               }`}
             >
-              {/* Active marker — ember tick above the icon */}
+              {/* Active marker — gold tick above the icon */}
               <span
                 aria-hidden
-                className={`absolute -top-2 h-0.5 w-6 rounded-full bg-ember transition-opacity ${
+                className={`absolute top-1.5 h-1 w-1 rounded-full bg-ember transition-opacity ${
                   active ? 'opacity-100' : 'opacity-0'
                 }`}
               />
-              <Icon className={`w-5 h-5 ${active ? 'text-ember' : ''}`} />
-              <span className="font-mono text-[9px] uppercase tracking-[0.12em] leading-none">
+              <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 1.8} />
+              <span className="font-sans text-[10px] font-medium leading-none">
                 {label}
               </span>
             </Link>
