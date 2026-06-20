@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
+import { persistRememberChoice } from '@/lib/auth/remember'
 import { cn } from '@/lib/utils'
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
@@ -42,6 +43,7 @@ export default function SignInPage() {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
   const [redirectTo, setRedirectTo] = useState('/feed')
 
   // Read ?redirect= without useSearchParams (avoids Suspense requirement)
@@ -64,6 +66,9 @@ export default function SignInPage() {
     })
     // Never reveal which field is wrong
     if (error) { setServerError('Invalid email or password'); return }
+    // Record the persistence choice before navigating. When unchecked, the
+    // session is ended on browser close (see src/middleware.ts).
+    persistRememberChoice(rememberMe)
     router.push(safeRedirect(redirectTo))
     router.refresh()
   }
@@ -136,6 +141,18 @@ export default function SignInPage() {
               <p className="text-error text-sm mt-1">{errors.password.message}</p>
             )}
           </div>
+
+          {/* Remember me */}
+          <label htmlFor="remember" className="flex cursor-pointer items-center gap-2.5 select-none">
+            <input
+              id="remember"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 cursor-pointer rounded border-white/20 bg-white/[0.03] accent-ember focus:outline-none focus:ring-2 focus:ring-ember/20"
+            />
+            <span className="text-sm text-on-surface-variant">Keep me signed in</span>
+          </label>
 
           {/* Server error */}
           {serverError && (

@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import type { Database } from '@/types/supabase'
+import { REMEMBER_PREF_COOKIE, SESSION_ALIVE_COOKIE } from '@/lib/auth/remember'
 
 /**
  * Routes that require an authenticated session. A request to any of these
@@ -16,6 +17,7 @@ const PROTECTED_ROUTES = [
   '/groups',
   '/settings',
   '/profile/edit',
+  '/onboarding',
 ]
 
 function isProtected(pathname: string): boolean {
@@ -53,15 +55,38 @@ export async function middleware(request: NextRequest) {
   // IMPORTANT: refreshes the auth token. Do not run code between creating the
   // client and this call, and always use getUser() (not getSession()) here —
   // getUser() revalidates the token with the Supabase auth server.
-  const {
+  let {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // "Remember me" enforcement. Supabase always writes persistent auth cookies,
+  // so a user who opted out of being remembered (pb-remember='0') would stay
+  // logged in across browser restarts. The pb-alive session cookie disappears
+  // when the browser closes; if it's gone for an opted-out user, end the
+  // session by expiring the Supabase auth cookies.
+  const rememberPref = request.cookies.get(REMEMBER_PREF_COOKIE)?.value
+  const browserAlive = request.cookies.get(SESSION_ALIVE_COOKIE)?.value
+  if (user && rememberPref === '0' && !browserAlive) {
+    for (const { name } of request.cookies.getAll()) {
+      if (name.startsWith('sb-')) {
+        supabaseResponse.cookies.set(name, '', { maxAge: 0, path: '/' })
+      }
+    }
+    supabaseResponse.cookies.set(REMEMBER_PREF_COOKIE, '', { maxAge: 0, path: '/' })
+    user = null
+  }
 
   if (!user && isProtected(request.nextUrl.pathname)) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/sign-in'
     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+    const redirectResponse = NextResponse.redirect(redirectUrl)
+    // Carry over any cookies we set above (e.g. expired session cookies for an
+    // un-remembered user) so the deletions aren't dropped by the new response.
+    for (const cookie of supabaseResponse.cookies.getAll()) {
+      redirectResponse.cookies.set(cookie)
+    }
+    return redirectResponse
   }
 
   // IMPORTANT: return the supabaseResponse object as-is so refreshed cookies

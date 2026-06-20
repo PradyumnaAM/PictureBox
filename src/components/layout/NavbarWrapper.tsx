@@ -5,6 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import type { User } from '@supabase/supabase-js'
 
+import { clearRememberChoice } from '@/lib/auth/remember'
+
 import Navbar from './Navbar'
 
 const AUTH_PATHS = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password', '/onboarding']
@@ -43,6 +45,7 @@ export default function NavbarWrapper() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     )
     await supabase.auth.signOut()
+    clearRememberChoice()
     router.push('/')
   }
 
