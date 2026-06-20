@@ -77,16 +77,16 @@ export default function SignInPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="surface-frost rounded-2xl border border-white/10 p-8 shadow-header">
+      <div className="surface-frost rounded-2xl border border-white/10 p-6 sm:p-8 shadow-header">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <p className="mb-3 font-label text-label uppercase text-ember">Members Only</p>
-          <h1 className="text-iris-gradient mb-1.5 font-display text-[2rem] font-semibold leading-tight tracking-tight">Welcome back.</h1>
+          <h1 className="text-iris-gradient mb-1.5 font-display text-2xl sm:text-[2rem] font-semibold leading-tight tracking-tight">Welcome back.</h1>
           <p className="text-sm text-on-surface-variant">Sign in to continue.</p>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} method="post" noValidate className="space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} method="post" noValidate className="space-y-4 sm:space-y-5">
 
           {/* Email */}
           <div>

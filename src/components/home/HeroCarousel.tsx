@@ -154,7 +154,7 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
 
   return (
     <section
-      className="relative min-h-screen overflow-hidden"
+      className="relative min-h-[88svh] overflow-hidden md:min-h-screen"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={handleTouchStart}
@@ -200,7 +200,7 @@ export default function HeroCarousel({ films }: HeroCarouselProps) {
           )}
           aria-hidden={i !== current}
         >
-          <div className="absolute bottom-0 left-0 right-0 pb-20 md:pb-24">
+          <div className="absolute bottom-0 left-0 right-0 pb-28 md:pb-24">
             <div className="max-w-page mx-auto px-4 md:px-16 flex items-end justify-between gap-8">
 
               {/* Left: film info + CTAs */}

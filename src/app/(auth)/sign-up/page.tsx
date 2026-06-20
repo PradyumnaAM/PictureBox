@@ -137,16 +137,16 @@ export default function SignUpPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="surface-frost rounded-2xl border border-white/10 p-8 shadow-header">
+      <div className="surface-frost rounded-2xl border border-white/10 p-6 sm:p-8 shadow-header">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <p className="font-label text-label uppercase text-ember mb-3">Members Only</p>
-          <h1 className="text-iris-gradient font-display text-[1.75rem] font-semibold tracking-tight mb-1.5">Create your account</h1>
+          <h1 className="text-iris-gradient font-display text-2xl sm:text-[1.75rem] font-semibold tracking-tight mb-1.5">Create your account</h1>
           <p className="text-on-surface-variant text-sm">Join the discerning curators.</p>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} method="post" noValidate className="space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} method="post" noValidate className="space-y-4 sm:space-y-5">
 
           {/* Email */}
           <div>
