@@ -70,8 +70,7 @@ export default function OnboardingPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('profiles')
           .update({
             streaming_services: selectedServices,

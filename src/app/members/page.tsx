@@ -40,18 +40,15 @@ export default async function MembersPage() {
 
   // RLS client: profiles_select exposes public profiles (plus self/followed),
   // which is exactly what a member directory should list.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
-
   const [{ data: membersData }, { data: myFollowsData }] = await Promise.all([
-    db
+    supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(20),
     // Fetch all IDs the current user already follows (one query, no N+1)
     user
-      ? db
+      ? supabase
           .from('follows')
           .select('following_id')
           .eq('follower_id', user.id)

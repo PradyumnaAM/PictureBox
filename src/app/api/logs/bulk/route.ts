@@ -3,6 +3,12 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTVShow } from '@/lib/tmdb/client'
+import type { Database } from '@/types/supabase'
+
+type AdminClient = ReturnType<typeof createAdminClient>
+type EpisodeInsert = Database['public']['Tables']['episodes']['Insert']
+type UserLogUpdate = Database['public']['Tables']['user_logs']['Update']
+type UserLogInsert = Database['public']['Tables']['user_logs']['Insert']
 
 interface BulkEpisode {
   episode_id: number   // TMDB episode ID
@@ -24,8 +30,7 @@ interface BulkBody {
 // title. An existing row is reused as-is; a missing row is created using the
 // real show name (from the payload when present, otherwise fetched from TMDB).
 async function resolveTvTitleId(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  admin: any,
+  admin: AdminClient,
   tmdbShowId: number,
   showName?: string,
 ): Promise<string | null> {
@@ -98,13 +103,13 @@ export async function POST(req: NextRequest) {
     !body.season_number ||
     !Array.isArray(body.episodes) ||
     body.episodes.length === 0 ||
+    body.episodes.length > 100 ||
     (body.status !== 'watched' && body.status !== 'unwatched')
   ) {
     return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
+  const admin = createAdminClient()
 
   if (body.status === 'watched') {
     return handleMarkWatched(admin, user.id, body)
@@ -114,8 +119,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleMarkWatched(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  admin: any,
+  admin: AdminClient,
   userId: string,
   body: BulkBody,
 ) {
@@ -148,7 +152,7 @@ async function handleMarkWatched(
   await Promise.all(
     body.episodes.map(async (ep) => {
       // Persist runtime when provided (positive only) so it feeds total-hours.
-      const episodeRecord: Record<string, unknown> = {
+      const episodeRecord: EpisodeInsert = {
         season_id: seasonId,
         episode_number: ep.episode_number,
         tmdb_episode_id: ep.episode_id,
@@ -206,8 +210,7 @@ async function handleMarkWatched(
 }
 
 async function handleMarkUnwatched(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  admin: any,
+  admin: AdminClient,
   userId: string,
   body: BulkBody,
 ) {

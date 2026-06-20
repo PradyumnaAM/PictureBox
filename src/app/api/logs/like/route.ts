@@ -44,11 +44,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
-
   // ── 1. Resolve (or create) the shared title row ───────────────────────────
-  const { data: titleRow, error: titleError } = await db
+  const { data: titleRow, error: titleError } = await supabase
     .from('titles')
     .upsert(
       {
@@ -73,7 +70,7 @@ export async function POST(req: NextRequest) {
   const titleId: string = (titleRow as { id: string }).id
 
   // ── 2. Find the user's existing (non-deleted) log for this title ──────────
-  const { data: existing } = await db
+  const { data: existing } = await supabase
     .from('user_logs')
     .select('id')
     .eq('user_id', user.id)
@@ -84,7 +81,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
 
   if (existing) {
-    const { error } = await db
+    const { error } = await supabase
       .from('user_logs')
       .update({ liked: body.liked })
       .eq('id', (existing as { id: string }).id)
@@ -98,7 +95,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 3. No log yet — create a minimal one carrying just the like ───────────
-  const { error: insertError } = await db.from('user_logs').insert({
+  const { error: insertError } = await supabase.from('user_logs').insert({
     user_id: user.id,
     title_id: titleId,
     log_type: body.media_type === 'movie' ? 'movie' : 'tv_show',

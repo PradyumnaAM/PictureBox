@@ -34,8 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { username } = await params
   // RLS client: public profiles are visible to everyone, private ones to
   // their owner and followers — exactly the visibility this page should have.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = (await createClient()) as any
+  const db = await createClient()
   const { data } = await db
     .from('profiles')
     .select('display_name, username')
@@ -53,8 +52,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   const supabase = await createClient()
   // All queries go through the RLS client — profiles_select / follows_select /
   // user_logs_select policies grant exactly the rows this page may show.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
+  const db = supabase
 
   const { data: profileData } = await db
     .from('profiles')
@@ -105,7 +103,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   const isOwnProfile = user?.id === profile.id
   const isFollowing = !!isFollowingData
   const stats = (Array.isArray(statsData) ? statsData[0] : statsData) as UserStats | null
-  const logs = (logsData ?? []) as LogEntry[]
+  const logs = (logsData ?? []) as unknown as LogEntry[]
 
   const memberSince = new Date(profile.created_at).toLocaleDateString('en-US', {
     month: 'long',

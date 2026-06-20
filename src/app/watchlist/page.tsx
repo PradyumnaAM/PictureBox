@@ -35,8 +35,7 @@ export default async function WatchlistPage() {
   }
 
   const adminClient = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: watchlist } = await (adminClient as any)
+  const { data: watchlist } = await adminClient
     .from('user_logs')
     .select('*, titles(*)')
     .eq('user_id', user.id)
@@ -44,7 +43,7 @@ export default async function WatchlistPage() {
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
-  const items = (watchlist ?? []) as WatchlistItem[]
+  const items = (watchlist ?? []) as unknown as WatchlistItem[]
 
   return (
     <div className="bg-background min-h-screen pt-28 pb-16">

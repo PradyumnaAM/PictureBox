@@ -45,16 +45,14 @@ export default async function GroupsPage() {
   if (!user) redirect('/sign-in')
 
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adminAny = admin as any
 
-  const { data: membershipsData } = await adminAny
+  const { data: membershipsData } = await admin
     .from('group_members')
     .select('*, group_watchlists(*)')
     .eq('user_id', user.id)
     .order('joined_at', { ascending: false })
 
-  const memberships = (membershipsData ?? []) as Membership[]
+  const memberships = (membershipsData ?? []) as unknown as Membership[]
   const groups = memberships
     .map((m) => m.group_watchlists)
     .filter((g): g is GroupWatchlist => g !== null)
@@ -62,7 +60,7 @@ export default async function GroupsPage() {
   // Fetch member counts for all groups in one query
   const groupIds = groups.map((g) => g.id)
   const { data: memberRows } = groupIds.length > 0
-    ? await adminAny.from('group_members').select('group_id').in('group_id', groupIds)
+    ? await admin.from('group_members').select('group_id').in('group_id', groupIds)
     : { data: [] }
 
   const memberCountMap: Record<string, number> = {}

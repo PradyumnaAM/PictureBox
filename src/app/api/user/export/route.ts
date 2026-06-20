@@ -12,18 +12,15 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
-
   const [{ data: profile }, { data: logs }, { data: lists }] = await Promise.all([
-    db.from('profiles').select('*').eq('id', user.id).single(),
-    db.from('user_logs').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
-    db.from('lists').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
+    supabase.from('profiles').select('*').eq('id', user.id).single(),
+    supabase.from('user_logs').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
+    supabase.from('lists').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
   ])
 
   const listIds = ((lists ?? []) as { id: string }[]).map((l) => l.id)
   const { data: listItems } = listIds.length
-    ? await db.from('list_items').select('*').in('list_id', listIds)
+    ? await supabase.from('list_items').select('*').in('list_id', listIds)
     : { data: [] }
 
   const payload = {

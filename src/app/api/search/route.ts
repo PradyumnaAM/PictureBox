@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { searchMulti } from '@/lib/tmdb/client'
+import { createRateLimiter, getIP } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
+const rl = createRateLimiter({ max: 60, windowMs: 60_000 })
+
 export async function GET(request: NextRequest) {
+  if (!rl(getIP(request))) {
+    return NextResponse.json({ movies: [], tvShows: [] }, { status: 429 })
+  }
+
   const query = request.nextUrl.searchParams.get('q') ?? ''
 
   if (!query.trim()) {

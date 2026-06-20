@@ -70,6 +70,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 })
   }
 
+  // Validate optional fields
+  if (body.rating !== undefined && body.rating !== null) {
+    if (typeof body.rating !== 'number' || body.rating < 0.5 || body.rating > 5.0) {
+      return NextResponse.json({ error: 'rating must be between 0.5 and 5.0' }, { status: 400 })
+    }
+  }
+  if (body.review !== undefined && body.review !== null) {
+    if (typeof body.review !== 'string' || body.review.length > 10000) {
+      return NextResponse.json({ error: 'review must be a string ≤ 10,000 characters' }, { status: 400 })
+    }
+  }
+  if (body.watched_at !== undefined && body.watched_at !== null) {
+    if (typeof body.watched_at !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(body.watched_at)) {
+      return NextResponse.json({ error: 'watched_at must be a YYYY-MM-DD date string' }, { status: 400 })
+    }
+  }
+
   const admin = createAdminClient()
 
   // ── 1. Cache the title into the shared reference table ────────────────────
@@ -125,8 +142,7 @@ export async function POST(req: NextRequest) {
     rewatch:           body.rewatch           ?? false,
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: existingLog, error: findError } = await (admin as any)
+  const { data: existingLog, error: findError } = await admin
     .from('user_logs')
     .select('id')
     .eq('user_id', user.id)
@@ -149,8 +165,7 @@ export async function POST(req: NextRequest) {
 
   if (existingLog) {
     // Update the user's existing current log for this title.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from('user_logs')
       .update(logFields)
       .eq('id', (existingLog as { id: string }).id)
@@ -161,8 +176,7 @@ export async function POST(req: NextRequest) {
     logError = error
   } else {
     // Insert a fresh log for this title.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (admin as any)
+    const { data, error } = await admin
       .from('user_logs')
       .insert({
         user_id:  user.id,
@@ -211,15 +225,15 @@ export async function DELETE(req: NextRequest) {
   }
 
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin as any)
+  const { error } = await admin
     .from('user_logs')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', body.log_id)
     .eq('user_id', user.id)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[DELETE /api/logs] DB error:', error.code, error.message)
+    return NextResponse.json({ error: 'Failed to delete log' }, { status: 500 })
   }
 
   return NextResponse.json({ success: true })

@@ -22,10 +22,8 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adminAny = admin as any
 
-  const { data: group } = await adminAny
+  const { data: group } = await admin
     .from('group_watchlists')
     .select('*')
     .eq('invite_code', body.invite_code.trim().toUpperCase())
@@ -35,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid invite code' }, { status: 404 })
   }
 
-  await adminAny
+  await admin
     .from('group_members')
     .upsert(
       { group_id: group.id, user_id: user.id, role: 'member', joined_at: new Date().toISOString() },

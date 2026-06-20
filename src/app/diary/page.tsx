@@ -34,8 +34,7 @@ export default async function DiaryPage() {
   }
 
   const adminClient = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: logs } = await (adminClient as any)
+  const { data: logs } = await adminClient
     .from('user_logs')
     .select('id, log_type, status, rating, review, watched_at, created_at, rewatch, contains_spoilers, titles(*), season:seasons(season_number), episode:episodes(episode_number)')
     .eq('user_id', user.id)
@@ -45,7 +44,7 @@ export default async function DiaryPage() {
     .order('created_at', { ascending: false })
     .limit(500)
 
-  const entries = (logs ?? []) as DiaryEntry[]
+  const entries = (logs ?? []) as unknown as DiaryEntry[]
 
   return (
     <div className="bg-background min-h-screen pt-28 pb-16">

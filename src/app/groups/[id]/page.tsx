@@ -32,8 +32,7 @@ interface GroupMember {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (admin as any).from('group_watchlists').select('name').eq('id', id).single()
+  const { data } = await admin.from('group_watchlists').select('name').eq('id', id).single()
   const name = (data as GroupWatchlist | null)?.name ?? 'Group Watchlist'
   return { title: `${name} — PictureBox` }
 }
@@ -57,11 +56,9 @@ export default async function GroupDetailPage({ params }: PageProps) {
   if (!user) redirect('/sign-in')
 
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adminAny = admin as any
 
   // Verify membership
-  const { data: membership } = await adminAny
+  const { data: membership } = await admin
     .from('group_members')
     .select('role')
     .eq('group_id', groupId)
@@ -76,18 +73,18 @@ export default async function GroupDetailPage({ params }: PageProps) {
     { data: membersData },
     { data: userVotesData },
   ] = await Promise.all([
-    adminAny.from('group_watchlists').select('*').eq('id', groupId).single(),
-    adminAny
+    admin.from('group_watchlists').select('*').eq('id', groupId).single(),
+    admin
       .from('group_items')
       .select('*, titles(*)')
       .eq('group_id', groupId)
       .eq('watched', false)
       .order('vote_count', { ascending: false }),
-    adminAny
+    admin
       .from('group_members')
       .select('*, profiles:user_id(id, username, display_name)')
       .eq('group_id', groupId),
-    adminAny
+    admin
       .from('group_votes')
       .select('group_item_id')
       .eq('user_id', user.id),
@@ -96,8 +93,8 @@ export default async function GroupDetailPage({ params }: PageProps) {
   if (!groupData) notFound()
 
   const group = groupData as GroupWatchlist
-  const items = (itemsData ?? []) as GroupItem[]
-  const members = (membersData ?? []) as GroupMember[]
+  const items = (itemsData ?? []) as unknown as GroupItem[]
+  const members = (membersData ?? []) as unknown as GroupMember[]
   const votedItemIds = ((userVotesData ?? []) as { group_item_id: string }[]).map((v) => v.group_item_id)
 
   const displayMembers = members.slice(0, 5)

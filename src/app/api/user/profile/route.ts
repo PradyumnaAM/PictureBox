@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/supabase'
+
+type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 
 const USERNAME_RE = /^[a-z0-9_]{3,30}$/i
 
@@ -14,8 +17,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('profiles')
     .select('username, display_name')
     .eq('id', user.id)
@@ -77,11 +79,19 @@ export async function PATCH(req: NextRequest) {
   }
 
   if ('country_code' in body) {
-    patch.country_code = body.country_code
+    const v = body.country_code
+    if (v !== null && (typeof v !== 'string' || !/^[A-Z]{2}$/.test(v))) {
+      return NextResponse.json({ error: 'country_code must be a 2-letter ISO code' }, { status: 400 })
+    }
+    patch.country_code = v
   }
 
   if ('streaming_services' in body) {
-    patch.streaming_services = body.streaming_services
+    const v = body.streaming_services
+    if (!Array.isArray(v) || !v.every((x) => typeof x === 'number' && Number.isInteger(x))) {
+      return NextResponse.json({ error: 'streaming_services must be an array of integers' }, { status: 400 })
+    }
+    patch.streaming_services = v
   }
 
   if ('favorite_genres' in body) {
@@ -93,10 +103,16 @@ export async function PATCH(req: NextRequest) {
   }
 
   if ('profile_public' in body) {
+    if (typeof body.profile_public !== 'boolean') {
+      return NextResponse.json({ error: 'profile_public must be a boolean' }, { status: 400 })
+    }
     patch.profile_public = body.profile_public
   }
 
   if ('spoiler_free_mode' in body) {
+    if (typeof body.spoiler_free_mode !== 'boolean') {
+      return NextResponse.json({ error: 'spoiler_free_mode must be a boolean' }, { status: 400 })
+    }
     patch.spoiler_free_mode = body.spoiler_free_mode
   }
 
@@ -106,10 +122,9 @@ export async function PATCH(req: NextRequest) {
 
   // RLS client: profiles_update policy restricts the update to the user's own
   // row, so no service-role bypass is needed here.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('profiles')
-    .update(patch)
+    .update(patch as unknown as ProfileUpdate)
     .eq('id', user.id)
 
   if (error) {
@@ -120,7 +135,7 @@ export async function PATCH(req: NextRequest) {
     if (error.code === '42501') {
       return NextResponse.json({ error: 'Missing database grant — apply the fix_role_grants migration in the Supabase SQL editor.' }, { status: 500 })
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
   }
 
   return NextResponse.json({ success: true })

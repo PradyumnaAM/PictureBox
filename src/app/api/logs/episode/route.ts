@@ -3,14 +3,19 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getTVShow } from '@/lib/tmdb/client'
+import type { Database } from '@/types/supabase'
+
+type AdminClient = ReturnType<typeof createAdminClient>
+type EpisodeInsert = Database['public']['Tables']['episodes']['Insert']
+type UserLogUpdate = Database['public']['Tables']['user_logs']['Update']
+type UserLogInsert = Database['public']['Tables']['user_logs']['Insert']
 
 // ─── Shared helper: resolve the title UUID without ever writing a blank name ───
 // Never creates or overwrites the parent title row with an empty/whitespace
 // title. An existing row is reused as-is; a missing row is created using the
 // real show name (from the payload when present, otherwise fetched from TMDB).
 async function resolveTvTitleId(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  admin: any,
+  admin: AdminClient,
   tmdbShowId: number,
   showName?: string,
 ): Promise<string | null> {
@@ -84,10 +89,7 @@ export async function GET(req: NextRequest) {
   }
 
   // titles are public-readable; the user-scoped (RLS) client is sufficient.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any
-
-  const { data: titleRow } = await sb
+  const { data: titleRow } = await supabase
     .from('titles')
     .select('id')
     .eq('tmdb_id', tmdbId)
@@ -100,7 +102,7 @@ export async function GET(req: NextRequest) {
   const titleId: string = (titleRow as { id: string }).id
 
   // The user's non-deleted episode logs, joined to season/episode numbers.
-  const { data, error } = await sb
+  const { data, error } = await supabase
     .from('user_logs')
     .select(
       'rating, season:seasons(season_number), episode:episodes(episode_number, tmdb_episode_id)',
@@ -115,7 +117,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to load logs' }, { status: 500 })
   }
 
-  const logs = ((data ?? []) as Array<{
+  const logs = ((data ?? []) as unknown as Array<{
     rating: number | null
     season: { season_number: number } | null
     episode: { episode_number: number; tmdb_episode_id: number | null } | null
@@ -165,8 +167,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
+  const admin = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
 
   // ── 1. Resolve title UUID (never writes a blank title) ─────────────────────
@@ -195,7 +196,7 @@ export async function POST(req: NextRequest) {
   // ── 3. Resolve episode UUID ────────────────────────────────────────────────
   // Persist the episode runtime when provided so total-hours stats can sum it.
   // Only set it for a positive number to avoid wiping a good value with null.
-  const episodeRecord: Record<string, unknown> = {
+  const episodeRecord: EpisodeInsert = {
     season_id: seasonId,
     episode_number: body.episode_number,
     tmdb_episode_id: body.episode_tmdb_id,
@@ -237,7 +238,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle()
 
   if (existingLog) {
-    const update: Record<string, unknown> = {
+    const update: UserLogUpdate = {
       status: 'watched',
       watched_at: today,
       deleted_at: null,
@@ -254,7 +255,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save log' }, { status: 500 })
     }
   } else {
-    const insert: Record<string, unknown> = {
+    const insert: UserLogInsert = {
       user_id: user.id,
       title_id: titleId,
       log_type: 'tv_episode',
@@ -315,8 +316,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
+  const admin = createAdminClient()
 
   // ── 1. Find title UUID ─────────────────────────────────────────────────────
   const { data: titleRow } = await admin

@@ -1,38 +1,13 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createRateLimiter, getIP } from '@/lib/rate-limit'
 
-// ─── In-memory rate limiter ──────────────────────────────────────────────────
-// Works per-process (adequate for single-instance / dev). On multi-instance
-// serverless the limit is per-instance, which is still a meaningful brake.
-const rl = new Map<string, { count: number; resetAt: number }>()
-const RL_MAX = 10
-const RL_WINDOW_MS = 60_000
-
-function getIP(req: NextRequest): string {
-  return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
-  )
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const entry = rl.get(ip)
-  if (!entry || now > entry.resetAt) {
-    rl.set(ip, { count: 1, resetAt: now + RL_WINDOW_MS })
-    return true
-  }
-  if (entry.count >= RL_MAX) return false
-  entry.count++
-  return true
-}
+const rl = createRateLimiter({ max: 10, windowMs: 60_000 })
 
 // ─── Route handler ───────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
-  const ip = getIP(req)
-  if (!checkRateLimit(ip)) {
+  if (!rl(getIP(req))) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
@@ -53,8 +28,7 @@ export async function GET(req: NextRequest) {
   // their usernames would falsely appear available. This edge case is
   // acceptable because profile_public defaults to true.
   const supabase = await createClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('profiles')
     .select('id')
     .eq('username', username)

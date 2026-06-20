@@ -37,8 +37,7 @@ export default async function SettingsPage() {
 
   // RLS client: profiles_select policy exposes the user's own row always
   // (id = auth.uid() is always true for select on own profile).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: profileData } = await (supabase as any)
+  const { data: profileData } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)

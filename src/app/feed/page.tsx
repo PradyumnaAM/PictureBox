@@ -220,8 +220,6 @@ export default async function FeedPage() {
 
   // RLS client: follows are world-readable, user_logs/profiles policies expose
   // own + followed/public rows — everything this feed needs without service role.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
 
   // Fetch follows + feed + stats + watching in parallel
   const [
@@ -229,12 +227,12 @@ export default async function FeedPage() {
     { data: statsData },
     { data: watching },
   ] = await Promise.all([
-    db
+    supabase
       .from('follows')
       .select('following_id')
       .eq('follower_id', user.id),
-    db.rpc('get_user_stats', { p_user_id: user.id }),
-    db
+    supabase.rpc('get_user_stats', { p_user_id: user.id }),
+    supabase
       .from('user_logs')
       .select('*, titles(*)')
       .eq('user_id', user.id)
@@ -249,7 +247,7 @@ export default async function FeedPage() {
   )
   const allUserIds = [...followingIds, user.id]
 
-  const { data: feedLogs } = await db
+  const { data: feedLogs } = await supabase
     .from('user_logs')
     .select('*, titles(*), profiles:user_id(id, username, display_name, avatar_url)')
     .in('user_id', allUserIds)

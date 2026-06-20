@@ -78,9 +78,8 @@ export default function WatchlistLikeButtons({
           }),
         })
         if (!res.ok) throw new Error()
-        const data = (await res.json().catch(() => ({}))) as {
-          log?: { id?: string }
-        }
+        let data: { log?: { id?: string } } = {}
+        try { data = await res.json() } catch { /* log.id unavailable, remove still works */ }
         if (data.log?.id) setLogId(data.log.id)
       } else {
         // Remove from watchlist — soft-delete the user's existing log.
@@ -128,7 +127,8 @@ export default function WatchlistLikeButtons({
       })
 
       if (!res.ok) throw new Error()
-      const data = (await res.json().catch(() => ({}))) as { liked?: boolean }
+      let data: { liked?: boolean } = {}
+      try { data = await res.json() } catch { /* optimistic state already applied */ }
       if (typeof data.liked === 'boolean') setLiked(data.liked)
       toast.success(next ? 'Liked.' : 'Removed like.')
       router.refresh()

@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { MediaType, TMDBMovie, TMDBTVShow } from '@/types/tmdb'
+import type { Json } from '@/types/supabase'
 
 // Note: the TMDB detail fetch is injected by callers (e.g. /api/logs passes
 // getMovie / getTVShow) so this cache module stays decoupled from the client.
@@ -20,9 +21,9 @@ export interface TitleRow {
   release_date: string | null
   runtime: number | null
   status: string | null
-  genres: unknown
-  cast_crew: unknown
-  watch_providers: unknown
+  genres: Json
+  cast_crew: Json
+  watch_providers: Json
   tmdb_rating: number | null
   tmdb_vote_count: number
   tmdb_synced_at: string
@@ -45,12 +46,12 @@ function normaliseMovie(data: TMDBMovie): Omit<TitleRow, 'id' | 'created_at'> {
     release_date: data.release_date || null,
     runtime: data.runtime ?? null,
     status: data.status ?? null,
-    genres: data.genres ?? [],
-    cast_crew: {
+    genres: (data.genres ?? []) as unknown as Json,
+    cast_crew: ({
       cast: data.credits?.cast ?? [],
       crew: data.credits?.crew ?? [],
-    },
-    watch_providers: data['watch/providers']?.results ?? {},
+    }) as unknown as Json,
+    watch_providers: (data['watch/providers']?.results ?? {}) as unknown as Json,
     tmdb_rating: data.vote_average != null ? Math.round(data.vote_average * 10) / 10 : null,
     tmdb_vote_count: data.vote_count ?? 0,
     tmdb_synced_at: new Date().toISOString(),
@@ -72,12 +73,12 @@ function normaliseTVShow(data: TMDBTVShow): Omit<TitleRow, 'id' | 'created_at'> 
     release_date: data.first_air_date || null,
     runtime,
     status: data.status ?? null,
-    genres: data.genres ?? [],
-    cast_crew: {
+    genres: (data.genres ?? []) as unknown as Json,
+    cast_crew: ({
       cast: data.credits?.cast ?? [],
       crew: data.credits?.crew ?? [],
-    },
-    watch_providers: data['watch/providers']?.results ?? {},
+    }) as unknown as Json,
+    watch_providers: (data['watch/providers']?.results ?? {}) as unknown as Json,
     tmdb_rating: data.vote_average != null ? Math.round(data.vote_average * 10) / 10 : null,
     tmdb_vote_count: data.vote_count ?? 0,
     tmdb_synced_at: new Date().toISOString(),
@@ -107,8 +108,7 @@ export async function upsertTitle(
       ? normaliseMovie(tmdbData as TMDBMovie)
       : normaliseTVShow(tmdbData as TMDBTVShow)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = createAdminClient() as any
+  const db = createAdminClient()
 
   const { data, error } = await db
     .from('titles')
@@ -131,8 +131,7 @@ export async function getCachedTitle(
   tmdbId: number,
   mediaType: MediaType,
 ): Promise<TitleRow | null> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = createAdminClient() as any
+  const db = createAdminClient()
 
   const { data, error } = await db
     .from('titles')
@@ -246,8 +245,7 @@ export async function cacheTitleOnLog(opts: {
     // the log can reference a title at all.
     if (cached) return cached
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = createAdminClient() as any
+    const db = createAdminClient()
     const { data, error } = await db
       .from('titles')
       .upsert(

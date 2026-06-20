@@ -2,6 +2,9 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { Database } from '@/types/supabase'
+
+type UserLogUpdate = Database['public']['Tables']['user_logs']['Update']
 
 const VALID_STATUSES = new Set([
   'watched',
@@ -39,13 +42,11 @@ export async function PATCH(req: NextRequest) {
   // state we also stamp watched_at (date-only) so diary dates and yearly
   // stats are correct instead of falling back to created_at. We never
   // clobber an existing watched_at.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const update: Record<string, any> = { status: body.status }
+  const update: UserLogUpdate = { status: body.status }
 
   if (body.status === 'watched' || body.status === 'completed') {
     // Only set watched_at if it isn't already set on the existing row.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existing } = await (admin as any)
+    const { data: existing } = await admin
       .from('user_logs')
       .select('watched_at')
       .eq('id', body.log_id)
@@ -57,8 +58,7 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin as any)
+  const { error } = await admin
     .from('user_logs')
     .update(update)
     .eq('id', body.log_id)

@@ -17,23 +17,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  if (!body.name?.trim()) {
-    return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+  const name = body.name?.trim()
+  if (!name || name.length > 100) {
+    return NextResponse.json({ error: 'Name must be between 1 and 100 characters' }, { status: 400 })
   }
 
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adminAny = admin as any
 
-  const { data: group, error: groupError } = await adminAny
+  const { data: group, error: groupError } = await admin
     .from('group_watchlists')
-    .insert({ name: body.name.trim(), created_by: user.id })
+    .insert({ name, created_by: user.id })
     .select()
     .single()
 
-  if (groupError) return NextResponse.json({ error: groupError.message }, { status: 500 })
+  if (groupError) {
+    console.error('[groups/create] DB error:', groupError.code, groupError.message)
+    return NextResponse.json({ error: 'Failed to create group' }, { status: 500 })
+  }
 
-  await adminAny
+  await admin
     .from('group_members')
     .insert({ group_id: group.id, user_id: user.id, role: 'owner', joined_at: new Date().toISOString() })
 

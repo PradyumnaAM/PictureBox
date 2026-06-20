@@ -17,11 +17,9 @@ export async function PATCH(_req: NextRequest, { params }: RouteContext) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const admin = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adminAny = admin as any
 
   // Verify membership
-  const { data: membership } = await adminAny
+  const { data: membership } = await admin
     .from('group_members')
     .select('id')
     .eq('group_id', groupId)
@@ -30,7 +28,7 @@ export async function PATCH(_req: NextRequest, { params }: RouteContext) {
 
   if (!membership) return NextResponse.json({ error: 'Not a member of this group' }, { status: 403 })
 
-  const { error } = await adminAny
+  const { error } = await admin
     .from('group_items')
     .update({ watched: true })
     .eq('id', itemId)

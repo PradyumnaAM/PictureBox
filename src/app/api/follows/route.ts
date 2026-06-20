@@ -30,8 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Cannot follow yourself' }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('follows')
     .upsert(
       { follower_id: user.id, following_id: body.following_id },
@@ -63,8 +62,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Missing following_id' }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('follows')
     .delete()
     .eq('follower_id', user.id)

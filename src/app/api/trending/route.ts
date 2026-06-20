@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
 import { getTrending } from '@/lib/tmdb/client'
+import { createRateLimiter, getIP } from '@/lib/rate-limit'
 
-export async function GET() {
+const rl = createRateLimiter({ max: 60, windowMs: 60_000 })
+
+export async function GET(request: NextRequest) {
+  if (!rl(getIP(request))) {
+    return NextResponse.json([], { status: 429 })
+  }
+
   try {
     const results = await getTrending('all', 'day')
     const filtered = results
