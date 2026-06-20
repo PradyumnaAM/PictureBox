@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ChevronRight, Film, Loader2, Search, X } from 'lucide-react'
 
 import type { TMDBSearchResult } from '@/types/tmdb'
+import type { UserSearchResult } from '@/app/api/search/users/route'
 import { formatReleaseYear, getPosterUrl, slugify } from '@/lib/tmdb/helpers'
 
 interface SearchModalProps {
@@ -17,6 +18,11 @@ interface SearchResults {
   movies: TMDBSearchResult[]
   tvShows: TMDBSearchResult[]
 }
+
+// Unified keyboard-navigation item across people and titles.
+type NavItem =
+  | { kind: 'user'; item: UserSearchResult }
+  | { kind: 'title'; item: TMDBSearchResult }
 
 // ---------------------------------------------------------------------------
 // Result row
@@ -80,6 +86,53 @@ function ResultRow({ item, isHighlighted, onClick }: ResultRowProps) {
 }
 
 // ---------------------------------------------------------------------------
+// User result row
+// ---------------------------------------------------------------------------
+
+function UserRow({
+  user,
+  isHighlighted,
+  onClick,
+}: {
+  user: UserSearchResult
+  isHighlighted: boolean
+  onClick: () => void
+}) {
+  const name = user.display_name ?? user.username
+  const initial = (name[0] ?? '?').toUpperCase()
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center gap-4 px-5 py-3 cursor-pointer transition-colors group ${
+        isHighlighted ? 'bg-surface-container-highest' : 'hover:bg-surface-container-highest'
+      }`}
+    >
+      <div className="w-10 h-10 rounded-full flex-shrink-0 bg-ember/15 flex items-center justify-center">
+        <span className="font-display text-base font-semibold text-ember">{initial}</span>
+      </div>
+
+      <div className="flex-1 min-w-0 text-left">
+        <p className={`font-medium truncate transition-colors ${
+          isHighlighted ? 'text-ember' : 'text-on-surface group-hover:text-ember'
+        }`}>
+          {name}
+        </p>
+        <p className="text-on-surface-variant text-sm mt-0.5 truncate">@{user.username}</p>
+      </div>
+
+      <ChevronRight
+        size={16}
+        className={`text-on-surface-variant ml-auto shrink-0 transition-opacity ${
+          isHighlighted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+        }`}
+      />
+    </button>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main modal
 // ---------------------------------------------------------------------------
 
@@ -88,6 +141,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResults | null>(null)
+  const [users, setUsers] = useState<UserSearchResult[]>([])
   const [trending, setTrending] = useState<TMDBSearchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
@@ -97,6 +151,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     if (!isOpen) {
       setQuery('')
       setResults(null)
+      setUsers([])
       setHighlightedIndex(-1)
       setIsLoading(false)
     }
@@ -110,28 +165,33 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       .then((data: TMDBSearchResult[]) =>
         setTrending(Array.isArray(data) ? data.slice(0, 6) : []),
       )
-      .catch(() => {})
+      .catch(() => { /* non-fatal: modal works without trending data */ })
   }, [isOpen])
 
-  // Debounced search
+  // Debounced search — titles (TMDB) and people (profiles) in parallel
   useEffect(() => {
     if (query.length < 2) {
       setResults(null)
+      setUsers([])
       setIsLoading(false)
       return
     }
 
     setIsLoading(true)
     const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-        const data = (await res.json()) as SearchResults
-        setResults(data)
-      } catch {
-        setResults({ movies: [], tvShows: [] })
-      } finally {
-        setIsLoading(false)
-      }
+      const q = encodeURIComponent(query)
+      const [titlesRes, usersRes] = await Promise.allSettled([
+        fetch(`/api/search?q=${q}`).then((r) => r.json() as Promise<SearchResults>),
+        fetch(`/api/search/users?q=${q}`).then(
+          (r) => r.json() as Promise<{ users: UserSearchResult[] }>,
+        ),
+      ])
+
+      setResults(
+        titlesRes.status === 'fulfilled' ? titlesRes.value : { movies: [], tvShows: [] },
+      )
+      setUsers(usersRes.status === 'fulfilled' ? (usersRes.value.users ?? []) : [])
+      setIsLoading(false)
     }, 300)
 
     return () => clearTimeout(timer)
@@ -143,24 +203,35 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, [query])
 
   const showTrending = query.length < 2
-  const hasResults = results && (results.movies.length > 0 || results.tvShows.length > 0)
+  const hasResults =
+    (results && (results.movies.length > 0 || results.tvShows.length > 0)) || users.length > 0
   const noResults = query.length >= 2 && !isLoading && results && !hasResults
 
-  // Flattened list used for keyboard navigation
-  const allResults = useMemo<TMDBSearchResult[]>(() => {
-    if (showTrending) return trending
-    if (!results) return []
-    return [...results.movies, ...results.tvShows]
-  }, [showTrending, trending, results])
+  // Flattened list used for keyboard navigation. People come first, then films,
+  // then TV — matching the visual order below.
+  const allResults = useMemo<NavItem[]>(() => {
+    if (showTrending) return trending.map((item) => ({ kind: 'title', item }) as NavItem)
+    const titleItems = results
+      ? [...results.movies, ...results.tvShows].map(
+          (item) => ({ kind: 'title', item }) as NavItem,
+        )
+      : []
+    return [...users.map((item) => ({ kind: 'user', item }) as NavItem), ...titleItems]
+  }, [showTrending, trending, results, users])
 
-  const navigateTo = useCallback(
-    (item: TMDBSearchResult) => {
-      const title = item.title ?? item.name ?? ''
-      const path =
-        item.media_type === 'movie'
-          ? `/film/${slugify(item.id, title)}`
-          : `/tv/${slugify(item.id, title)}`
-      router.push(path)
+  const navigate = useCallback(
+    (nav: NavItem) => {
+      if (nav.kind === 'user') {
+        router.push(`/u/${nav.item.username}`)
+      } else {
+        const item = nav.item
+        const title = item.title ?? item.name ?? ''
+        router.push(
+          item.media_type === 'movie'
+            ? `/film/${slugify(item.id, title)}`
+            : `/tv/${slugify(item.id, title)}`,
+        )
+      }
       onClose()
     },
     [router, onClose],
@@ -187,16 +258,16 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         e.preventDefault()
         setHighlightedIndex((i) => Math.max(i - 1, -1))
       } else if (e.key === 'Enter' && highlightedIndex >= 0) {
-        const item = allResults[highlightedIndex]
-        if (item) {
+        const nav = allResults[highlightedIndex]
+        if (nav) {
           e.preventDefault()
-          navigateTo(item)
+          navigate(nav)
         }
       }
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [isOpen, allResults, highlightedIndex, navigateTo])
+  }, [isOpen, allResults, highlightedIndex, navigate])
 
   if (!isOpen) return null
 
@@ -218,7 +289,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search films and TV shows..."
+            placeholder="Search films, TV shows, and people..."
             className="flex-1 bg-transparent text-on-surface text-lg placeholder:text-on-surface-variant focus:outline-none"
           />
           {isLoading ? (
@@ -244,7 +315,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               <p className="font-sans text-label uppercase tracking-widest text-on-surface-variant mb-3">
                 Trending
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 {trending.map((item, i) => {
                   const title = item.title ?? item.name ?? ''
                   const year = formatReleaseYear(item.release_date ?? item.first_air_date)
@@ -255,7 +326,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => navigateTo(item)}
+                      onClick={() => navigate({ kind: 'title', item })}
                       className={`flex flex-col gap-2 text-left cursor-pointer group rounded-lg p-2 transition-colors ${
                         highlightedIndex === i
                           ? 'bg-surface-container-highest'
@@ -302,34 +373,50 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           {/* Search results */}
           {!showTrending && hasResults && (
             <div className="py-2">
-              {results!.movies.length > 0 && (
+              {/* People come first; their highlight indices are 0..users.length-1 */}
+              {users.length > 0 && (
                 <div>
                   <p className="font-sans text-label uppercase tracking-widest text-on-surface-variant px-5 pt-3 pb-2">
-                    Films
+                    People
                   </p>
-                  {results!.movies.map((item, i) => (
-                    <ResultRow
-                      key={item.id}
-                      item={item}
+                  {users.map((user, i) => (
+                    <UserRow
+                      key={user.id}
+                      user={user}
                       isHighlighted={highlightedIndex === i}
-                      onClick={() => navigateTo(item)}
+                      onClick={() => navigate({ kind: 'user', item: user })}
                     />
                   ))}
                 </div>
               )}
-              {results!.tvShows.length > 0 && (
+              {results && results.movies.length > 0 && (
+                <div>
+                  <p className="font-sans text-label uppercase tracking-widest text-on-surface-variant px-5 pt-3 pb-2">
+                    Films
+                  </p>
+                  {results.movies.map((item, i) => (
+                    <ResultRow
+                      key={item.id}
+                      item={item}
+                      isHighlighted={highlightedIndex === users.length + i}
+                      onClick={() => navigate({ kind: 'title', item })}
+                    />
+                  ))}
+                </div>
+              )}
+              {results && results.tvShows.length > 0 && (
                 <div>
                   <p className="font-sans text-label uppercase tracking-widest text-on-surface-variant px-5 pt-3 pb-2">
                     TV Shows
                   </p>
-                  {results!.tvShows.map((item, i) => (
+                  {results.tvShows.map((item, i) => (
                     <ResultRow
                       key={item.id}
                       item={item}
                       isHighlighted={
-                        highlightedIndex === (results?.movies.length ?? 0) + i
+                        highlightedIndex === users.length + results.movies.length + i
                       }
-                      onClick={() => navigateTo(item)}
+                      onClick={() => navigate({ kind: 'title', item })}
                     />
                   ))}
                 </div>

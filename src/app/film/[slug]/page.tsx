@@ -79,11 +79,9 @@ export default async function FilmPage({ params }: PageProps) {
   } = await supabase.auth.getUser()
 
   // ── Per-user data (RLS-scoped): profile country, reviews, own log ─────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
 
   // Resolve the shared title row for this TMDB id so we can find logs/reviews.
-  const { data: titleRow } = await db
+  const { data: titleRow } = await supabase
     .from('titles')
     .select('id')
     .eq('tmdb_id', tmdbId)
@@ -94,7 +92,7 @@ export default async function FilmPage({ params }: PageProps) {
   // Signed-in user's country for streaming-provider region selection.
   let countryCode = 'US'
   if (user) {
-    const { data: profile } = await db
+    const { data: profile } = await supabase
       .from('profiles')
       .select('country_code')
       .eq('id', user.id)
@@ -105,13 +103,15 @@ export default async function FilmPage({ params }: PageProps) {
   // Reviews for this title (RLS limits to viewable rows: own + public/followed).
   let reviews: Review[] = []
   if (titleId) {
-    const { data: reviewRows } = await db
+    const { data: reviewRows } = await supabase
       .from('user_logs')
       .select(
         'id, rating, review, contains_spoilers, watched_at, created_at, profiles:user_id(username, display_name, avatar_url)',
       )
       .eq('title_id', titleId)
-      .not('review', 'is', null)
+      // Include rating-only entries, not just written reviews, so a user's
+      // rating shows even when they didn't write anything.
+      .or('review.not.is.null,rating.not.is.null')
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
     reviews = (reviewRows as Review[] | null) ?? []
@@ -120,7 +120,7 @@ export default async function FilmPage({ params }: PageProps) {
   // The signed-in user's own (non-deleted) log for this title — drives buttons.
   let myLog: { id: string; status: string; liked: boolean } | null = null
   if (user && titleId) {
-    const { data: logRow } = await db
+    const { data: logRow } = await supabase
       .from('user_logs')
       .select('id, status, liked')
       .eq('user_id', user.id)
@@ -357,13 +357,13 @@ export default async function FilmPage({ params }: PageProps) {
               </>
             )}
 
-            {/* Reviews */}
-            <h2 className="font-display text-2xl text-cream mb-4 mt-10">Reviews</h2>
+            {/* Ratings & Reviews */}
+            <h2 className="font-display text-2xl text-cream mb-4 mt-10">Ratings &amp; Reviews</h2>
             {reviews.length > 0 ? (
               <ReviewList reviews={reviews} />
             ) : (
               <div className="bg-surface-container rounded-xl p-8 text-center">
-                <p className="text-on-surface-variant mb-4">No reviews yet. Be the first.</p>
+                <p className="text-on-surface-variant mb-4">No ratings or reviews yet. Be the first.</p>
                 <div className="flex justify-center">
                   {user ? (
                     <LogButton movie={movieMeta} label="Log & Review" />
