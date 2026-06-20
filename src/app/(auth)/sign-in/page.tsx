@@ -64,10 +64,8 @@ export default function SignInPage() {
     })
     // Never reveal which field is wrong
     if (error) { setServerError('Invalid email or password'); return }
-    // refresh() re-syncs Next.js App Router with the new session cookies before
-    // navigating, so middleware and server components see the authenticated state.
-    router.refresh()
     router.push(safeRedirect(redirectTo))
+    router.refresh()
   }
 
   const errors = form.formState.errors
@@ -83,7 +81,7 @@ export default function SignInPage() {
           <p className="text-sm text-on-surface-variant">Sign in to continue.</p>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} method="post" noValidate className="space-y-5">
 
           {/* Email */}
           <div>

@@ -55,7 +55,7 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
         const u = data?.profile?.username
         if (typeof u === 'string' && u.length > 0) setProfileUsername(u)
       })
-      .catch(() => {})
+      .catch(() => { /* non-fatal: nav falls back to user.id as username */ })
     return () => {
       cancelled = true
     }
@@ -199,13 +199,13 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
               <>
                 <Link
                   href="/sign-in"
-                  className="inline-flex h-9 items-center rounded-full border border-white/20 px-4 font-sans text-sm font-medium text-on-surface-variant transition-all hover:border-ember hover:text-ember active:scale-95"
+                  className="inline-flex items-center justify-center rounded-[6px] border border-white/20 bg-transparent px-5 py-[10px] font-sans text-sm font-medium leading-none tracking-wide text-cream transition-all hover:border-white/40 hover:text-white active:scale-95"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/sign-up"
-                  className="inline-flex h-9 items-center rounded-full border border-ember px-4 font-sans text-sm font-semibold text-ember transition-all hover:bg-ember hover:text-white active:scale-95"
+                  className="inline-flex items-center justify-center rounded-[6px] border border-white/20 bg-transparent px-5 py-[10px] font-sans text-sm font-medium leading-none tracking-wide text-cream transition-all hover:border-white/40 hover:text-white active:scale-95"
                 >
                   Sign Up
                 </Link>

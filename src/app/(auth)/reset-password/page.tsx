@@ -17,7 +17,7 @@ const schema = z
   .object({
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
+      .min(12, 'Password must be at least 12 characters')
       .regex(/\d/, 'Password must contain at least one number'),
     confirmPassword: z.string(),
   })
@@ -47,29 +47,38 @@ export default function ResetPasswordPage() {
 
   const supabase = createClient()
 
-  // Exchange the PKCE code (or implicit token) for a valid session on mount.
+  // The recovery link is processed by the server-side /auth/callback route,
+  // which exchanges the PKCE code and sets the session cookie before redirecting
+  // here. We simply confirm a recovery session exists. We also listen for auth
+  // events to cover the implicit (hash token) flow, where the SDK establishes
+  // the session client-side via detectSessionInUrl. Only after neither path
+  // produces a session within a short grace window do we treat the link as bad.
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('code')
-
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) setInitError('Invalid or expired reset link. Please request a new one.')
-        else setReady(true)
-      })
-      return
+    let settled = false
+    const markReady = () => {
+      if (settled) return
+      settled = true
+      setReady(true)
     }
 
-    // Fallback: if no code param, check whether the auth state change event
-    // fires (implicit flow with hash token handled by the SDK automatically).
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) markReady()
     })
 
-    // If neither code nor hash, the link is invalid.
-    const hasHash = typeof window !== 'undefined' && window.location.hash.includes('access_token')
-    if (!hasHash) setInitError('No reset code found. Please request a new password reset.')
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) markReady()
+    })
 
-    return () => subscription.unsubscribe()
+    const timeout = setTimeout(() => {
+      if (settled) return
+      settled = true
+      setInitError('Invalid or expired reset link. Please request a new one.')
+    }, 2500)
+
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -117,7 +126,7 @@ export default function ResetPasswordPage() {
             Verifying reset link…
           </div>
         ) : (
-          <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-5">
+          <form onSubmit={form.handleSubmit(onSubmit)} method="post" noValidate className="space-y-5">
 
             {/* New password */}
             <div>

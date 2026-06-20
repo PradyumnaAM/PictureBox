@@ -8,7 +8,7 @@ import PosterRow, { type PosterItem } from '@/components/home/PosterRow'
 import Footer from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
-  title: 'PictureBox — Track every film and every episode',
+  title: 'PictureBox',
   description:
     'The watch diary built for 2026. Log films in five seconds, track TV down to the episode, and find your next watch through friends — not algorithms. Free forever.',
 }

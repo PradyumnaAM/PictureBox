@@ -23,7 +23,7 @@ const signUpSchema = z
       .regex(/^[A-Za-z0-9_]+$/, 'Only letters, numbers, and underscores'),
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
+      .min(12, 'Password must be at least 12 characters')
       .regex(/\d/, 'Password must contain at least one number'),
     confirmPassword: z.string(),
   })
@@ -146,7 +146,7 @@ export default function SignUpPage() {
           <p className="text-on-surface-variant text-sm">Join the discerning curators.</p>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} method="post" noValidate className="space-y-5">
 
           {/* Email */}
           <div>
