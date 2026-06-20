@@ -42,7 +42,7 @@ export default function CategoryView({
           <span aria-hidden className="w-6 h-px bg-ember/50" />
           {kicker}
         </p>
-        <h1 className="font-display text-6xl font-bold leading-none text-cream md:text-8xl">
+        <h1 className="font-display text-4xl font-bold leading-none text-cream sm:text-6xl md:text-8xl">
           {title}
         </h1>
         <p className="text-on-surface-variant text-lg mt-5 font-mono">
@@ -51,7 +51,7 @@ export default function CategoryView({
       </header>
 
       {items.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10 px-4 md:px-16 max-w-page mx-auto pb-24">
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-x-3 gap-y-6 px-4 md:gap-x-6 md:gap-y-10 md:px-16 max-w-page mx-auto pb-24">
           {items.map((item, index) => (
             <PosterCard
               key={item.id}

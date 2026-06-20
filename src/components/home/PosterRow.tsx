@@ -84,7 +84,7 @@ export default function PosterRow({
         {/* Scrollable card row */}
         <div
           ref={scrollRef}
-          className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth px-page-x-mobile py-4 md:px-14"
+          className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth px-page-x-mobile py-4 md:gap-5 md:px-14"
         >
           {items.map((item, index) => (
             <PosterCard
@@ -92,8 +92,8 @@ export default function PosterRow({
               item={item}
               index={index}
               linkPrefix={linkPrefix}
-              className="flex-none w-52 snap-start"
-              sizes="208px"
+              className="flex-none w-32 snap-start sm:w-40 md:w-52"
+              sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, 208px"
               magnet
             />
           ))}

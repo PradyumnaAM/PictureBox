@@ -34,7 +34,7 @@ export default function PosterCard({
   index: _index,
   linkPrefix,
   className,
-  sizes = '(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw',
+  sizes = '(max-width: 640px) 31vw, (max-width: 1024px) 23vw, 18vw',
   magnet = false,
 }: PosterCardProps) {
   const posterUrl = getPosterUrl(item.poster_path, 'md')

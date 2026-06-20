@@ -143,7 +143,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
 
       {/* Grid */}
       {filteredItems.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
           {filteredItems.map((item) => {
             const title = item.titles
             if (!title) return null
@@ -167,7 +167,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
                         alt={title.title}
                         fill
                         className="object-cover"
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+                        sizes="(max-width: 640px) 31vw, (max-width: 768px) 23vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
                       />
                     ) : (
                       <div className="w-full h-full bg-surface-container flex items-center justify-center">
@@ -186,13 +186,13 @@ export default function WatchlistClient({ items: initialItems }: Props) {
                   )}
 
                   {/* Action overlay — always visible on touch, hover-reveal on desktop */}
-                  <div className="absolute inset-0 bg-black/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 z-20">
+                  <div className="absolute inset-0 bg-black/60 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 md:gap-3 z-20">
                     <button
                       type="button"
                       onClick={() => handleMarkWatched(item)}
                       disabled={isLoading}
                       title="Mark as Watched"
-                      className="w-10 h-10 rounded-full bg-ember text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-transform disabled:opacity-50"
+                      className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-ember text-black flex items-center justify-center hover:scale-110 active:scale-95 transition-transform disabled:opacity-50"
                     >
                       <Check size={18} strokeWidth={2.5} />
                     </button>
@@ -201,7 +201,7 @@ export default function WatchlistClient({ items: initialItems }: Props) {
                       onClick={() => handleRemove(item)}
                       disabled={isLoading}
                       title="Remove"
-                      className="w-10 h-10 rounded-full bg-surface-container/90 backdrop-blur text-on-surface flex items-center justify-center hover:bg-red-500/80 hover:text-white hover:scale-110 active:scale-95 transition-all disabled:opacity-50"
+                      className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-surface-container/90 backdrop-blur text-on-surface flex items-center justify-center hover:bg-red-500/80 hover:text-white hover:scale-110 active:scale-95 transition-all disabled:opacity-50"
                     >
                       <X size={18} strokeWidth={2.5} />
                     </button>
