@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Pencil, Search } from 'lucide-react'
+import { Pencil, Search, UserRound } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
 
 import {
@@ -197,18 +197,48 @@ export default function Navbar({ activePath, user, onSignOut }: NavbarProps) {
               </>
             ) : (
               <>
-                <Link
-                  href="/sign-in"
-                  className="inline-flex items-center justify-center rounded-[6px] border border-white/20 bg-transparent px-5 py-[10px] font-sans text-sm font-medium leading-none tracking-wide text-cream transition-all hover:border-white/40 hover:text-white active:scale-95"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="inline-flex items-center justify-center rounded-[6px] border border-white/20 bg-transparent px-5 py-[10px] font-sans text-sm font-medium leading-none tracking-wide text-cream transition-all hover:border-white/40 hover:text-white active:scale-95"
-                >
-                  Sign Up
-                </Link>
+                {/* Desktop: full buttons */}
+                <div className="hidden items-center gap-2 md:flex">
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] border border-white/20 bg-transparent px-5 py-[10px] font-sans text-sm font-medium leading-none tracking-wide text-cream transition-all hover:border-white/40 hover:text-white active:scale-95"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-[6px] border border-white/20 bg-transparent px-5 py-[10px] font-sans text-sm font-medium leading-none tracking-wide text-cream transition-all hover:border-white/40 hover:text-white active:scale-95"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+
+                {/* Mobile: compact account icon → dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    aria-label="Account menu"
+                    className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-surface-container-high text-cream transition-all hover:border-ember/60 hover:text-ember active:scale-95 md:hidden"
+                  >
+                    <UserRound className="h-[18px] w-[18px]" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="surface-frost w-44 rounded-xl border border-white/10 p-1.5 shadow-header"
+                  >
+                    <DropdownMenuItem
+                      onClick={() => router.push('/sign-in')}
+                      className="cursor-pointer rounded-lg px-3 py-2 text-sm text-on-surface hover:bg-white/[0.06] hover:text-ember"
+                    >
+                      Sign In
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => router.push('/sign-up')}
+                      className="cursor-pointer rounded-lg px-3 py-2 text-sm text-on-surface hover:bg-white/[0.06] hover:text-ember"
+                    >
+                      Sign Up
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
           </div>
