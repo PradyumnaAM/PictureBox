@@ -247,16 +247,41 @@ export default async function FeedPage() {
   )
   const allUserIds = [...followingIds, user.id]
 
-  const { data: feedLogs } = await supabase
+  // Fetch the logs, then resolve their authors with a separate query rather than
+  // a PostgREST embed. The embed (`profiles:user_id(...)`) returns null authors
+  // whenever PostgREST's relationship cache is stale, which silently empties the
+  // feed; a direct `.in('id', ...)` lookup on profiles always resolves.
+  const { data: feedLogs, error: feedError } = await supabase
     .from('user_logs')
-    .select('*, titles(*), profiles:user_id(id, username, display_name, avatar_url)')
+    .select('*, titles(*)')
     .in('user_id', allUserIds)
     .is('deleted_at', null)
     .in('status', ['watched', 'watching'])
     .order('created_at', { ascending: false })
     .limit(50)
 
-  const logs = (feedLogs ?? []) as FeedLog[]
+  if (feedError) console.error('[feed] logs query failed:', feedError.message)
+
+  const logRows = (feedLogs ?? []) as FeedLog[]
+  const authorIds = [...new Set(logRows.map((l) => l.user_id))]
+
+  const { data: authors, error: authorsError } = authorIds.length
+    ? await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', authorIds)
+    : { data: [], error: null }
+
+  if (authorsError) console.error('[feed] authors query failed:', authorsError.message)
+
+  const authorById = new Map<string, ProfileData>(
+    ((authors ?? []) as ProfileData[]).map((p) => [p.id, p]),
+  )
+
+  const logs: FeedLog[] = logRows.map((log) => ({
+    ...log,
+    profiles: authorById.get(log.user_id) ?? null,
+  }))
   const watchingShows = (watching ?? []) as WatchingLog[]
   const stats = (Array.isArray(statsData) ? statsData[0] : statsData) as UserStats | null
   const hasFollows = followingIds.length > 0

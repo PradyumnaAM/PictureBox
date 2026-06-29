@@ -12,7 +12,7 @@ import {
   toPosterItems,
 } from '@/lib/tmdb/browse'
 import CategoryView from '@/components/browse/CategoryView'
-import TrackShowButton from '@/components/tv/TrackShowButton'
+import TrackShowButton, { type ExistingShowLog } from '@/components/tv/TrackShowButton'
 import WatchlistLikeButtons from '@/components/film/WatchlistLikeButtons'
 import ReviewList, { type Review } from '@/components/film/ReviewList'
 import {
@@ -150,19 +150,37 @@ export default async function TVShowPage({ params }: PageProps) {
     reviews = (reviewRows as Review[] | null) ?? []
   }
 
-  let myLog: { id: string; status: string; liked: boolean } | null = null
+  type MyLog = {
+    id: string
+    status: string
+    liked: boolean
+    rating: number | null
+    review: string | null
+  }
+  let myLog: MyLog | null = null
   if (user && titleId) {
     const { data: logRow } = await supabase
       .from('user_logs')
-      .select('id, status, liked')
+      .select('id, status, liked, rating, review')
       .eq('user_id', user.id)
       .eq('title_id', titleId)
       .is('season_id', null)
       .is('episode_id', null)
       .is('deleted_at', null)
       .maybeSingle()
-    myLog = (logRow as { id: string; status: string; liked: boolean } | null) ?? null
+    myLog = (logRow as MyLog | null) ?? null
   }
+
+  const showMeta = {
+    id: show.id,
+    name: show.name,
+    poster_path: show.poster_path,
+    first_air_date: show.first_air_date,
+  }
+  const myShowLog: ExistingShowLog | null = myLog
+    ? { status: myLog.status, rating: myLog.rating, review: myLog.review }
+    : null
+  const reviewCtaLabel = myShowLog ? 'Edit your review' : 'Add your review'
 
   const backdropUrl = getBackdropUrl(show.backdrop_path, 'lg')
 
@@ -271,14 +289,7 @@ export default async function TVShowPage({ params }: PageProps) {
               <div className="flex gap-3 flex-wrap">
                 {user && (
                   <>
-                    <TrackShowButton
-                      show={{
-                        id: show.id,
-                        name: show.name,
-                        poster_path: show.poster_path,
-                        first_air_date: show.first_air_date,
-                      }}
-                    />
+                    <TrackShowButton show={showMeta} existingLog={myShowLog} />
                     <WatchlistLikeButtons
                       title={{
                         tmdb_id: show.id,
@@ -399,16 +410,26 @@ export default async function TVShowPage({ params }: PageProps) {
             )}
 
             {/* Ratings & Reviews */}
-            <h2 className="font-display text-2xl text-cream mb-4 mt-10">Ratings &amp; Reviews</h2>
+            <div className="flex items-center justify-between gap-4 mb-4 mt-10">
+              <h2 className="font-display text-2xl text-cream">Ratings &amp; Reviews</h2>
+              {user && (
+                <TrackShowButton
+                  show={showMeta}
+                  existingLog={myShowLog}
+                  variant="outline"
+                  label={reviewCtaLabel}
+                />
+              )}
+            </div>
             {reviews.length > 0 ? (
               <ReviewList reviews={reviews} />
             ) : (
               <div className="bg-surface-container rounded-xl p-8 text-center">
-                <p className="text-on-surface-variant mb-4">No ratings or reviews yet. Be the first.</p>
+                <p className="text-on-surface-variant">No ratings or reviews yet. Be the first.</p>
                 {!user && (
                   <Link
                     href="/sign-in"
-                    className="text-on-surface-variant text-sm hover:text-gold transition"
+                    className="text-on-surface-variant text-sm hover:text-gold transition mt-4 inline-block"
                   >
                     Sign in to write a review
                   </Link>

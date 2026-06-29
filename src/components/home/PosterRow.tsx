@@ -51,8 +51,10 @@ export default function PosterRow({
 
   return (
     <div className="max-w-page mx-auto">
-      {/* Section header — editorial: title, rule line, reel count */}
-      <div className="mb-6 flex items-baseline gap-5 px-page-x-mobile md:px-page-x">
+      {/* Section header — editorial: title, rule line, reel count.
+          Insets match the scroll row below so the title lines up with the
+          first card (and clears the edge fade on desktop). */}
+      <div className="mb-6 flex items-baseline gap-5 px-page-x-mobile md:px-24">
         <h2 className="shrink-0 font-display text-2xl font-semibold leading-none tracking-tight text-cream md:text-[1.75rem]">
           {title}
         </h2>
@@ -81,10 +83,13 @@ export default function PosterRow({
           <ChevronLeft size={20} />
         </button>
 
-        {/* Scrollable card row */}
+        {/* Scrollable card row.
+            Horizontal padding is kept >= the edge-fade width on each breakpoint
+            (20px mobile / 96px desktop) so the resting first and last cards sit
+            clear of the fade instead of being darkened by it. */}
         <div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth px-page-x-mobile py-4 md:gap-5 md:px-14"
+          className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth px-page-x-mobile py-4 md:gap-5 md:px-24"
         >
           {items.map((item, index) => (
             <PosterCard
@@ -99,9 +104,11 @@ export default function PosterRow({
           ))}
         </div>
 
-        {/* Edge fade masks — above cards (z-5), below arrows (z-10) */}
-        <div className="pointer-events-none absolute left-0 top-0 z-[5] h-full w-10 md:w-24 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 z-[5] h-full w-10 md:w-24 bg-gradient-to-l from-background to-transparent" />
+        {/* Edge fade masks — above cards (z-5), below arrows (z-10).
+            Widths equal the scroll row's side padding so the fade sits entirely
+            in the gutter and never covers a resting card. */}
+        <div className="pointer-events-none absolute left-0 top-0 z-[5] h-full w-5 md:w-24 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 z-[5] h-full w-5 md:w-24 bg-gradient-to-l from-background to-transparent" />
 
         {/* Right arrow */}
         <button

@@ -146,20 +146,26 @@ export default async function UserProfilePage({ params }: PageProps) {
                 </p>
               )}
 
-              {/* Follow counts */}
+              {/* Follow counts — each opens the matching people list */}
               <div className="flex gap-6 mt-3">
-                <button type="button" className="text-left hover:opacity-80 transition-opacity">
+                <Link
+                  href={`/u/${profile.username}/followers`}
+                  className="text-left hover:opacity-80 transition-opacity"
+                >
                   <span className="font-semibold text-on-surface text-sm">
                     {followersCount ?? 0}
                   </span>{' '}
                   <span className="text-on-surface-variant text-sm">followers</span>
-                </button>
-                <button type="button" className="text-left hover:opacity-80 transition-opacity">
+                </Link>
+                <Link
+                  href={`/u/${profile.username}/following`}
+                  className="text-left hover:opacity-80 transition-opacity"
+                >
                   <span className="font-semibold text-on-surface text-sm">
                     {followingCount ?? 0}
                   </span>{' '}
                   <span className="text-on-surface-variant text-sm">following</span>
-                </button>
+                </Link>
               </div>
 
               <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-outline mt-2.5">

@@ -15,6 +15,7 @@ import {
   slugify,
 } from '@/lib/tmdb/helpers'
 import LogButton from '@/components/film/LogButton'
+import { type ExistingLog } from '@/components/film/LogModal'
 import WatchlistLikeButtons from '@/components/film/WatchlistLikeButtons'
 import ReviewList, { type Review } from '@/components/film/ReviewList'
 
@@ -117,20 +118,44 @@ export default async function FilmPage({ params }: PageProps) {
     reviews = (reviewRows as Review[] | null) ?? []
   }
 
-  // The signed-in user's own (non-deleted) log for this title — drives buttons.
-  let myLog: { id: string; status: string; liked: boolean } | null = null
+  // The signed-in user's own (non-deleted) log for this title — drives buttons
+  // and prefills the log/review modal so editing never blanks existing data.
+  type MyLog = {
+    id: string
+    status: string
+    liked: boolean
+    rating: number | null
+    review: string | null
+    watched_at: string | null
+    contains_spoilers: boolean
+    rewatch: boolean
+  }
+  let myLog: MyLog | null = null
   if (user && titleId) {
     const { data: logRow } = await supabase
       .from('user_logs')
-      .select('id, status, liked')
+      .select('id, status, liked, rating, review, watched_at, contains_spoilers, rewatch')
       .eq('user_id', user.id)
       .eq('title_id', titleId)
       .is('season_id', null)
       .is('episode_id', null)
       .is('deleted_at', null)
       .maybeSingle()
-    myLog = (logRow as { id: string; status: string; liked: boolean } | null) ?? null
+    myLog = (logRow as MyLog | null) ?? null
   }
+
+  const myExistingLog: ExistingLog | null = myLog
+    ? {
+        id: myLog.id,
+        status: myLog.status,
+        rating: myLog.rating,
+        review: myLog.review,
+        watched_at: myLog.watched_at,
+        contains_spoilers: myLog.contains_spoilers,
+        rewatch: myLog.rewatch,
+      }
+    : null
+  const reviewCtaLabel = myExistingLog ? 'Edit your review' : 'Add your review'
 
   const backdropUrl = getBackdropUrl(movie.backdrop_path, 'lg')
   const year = formatReleaseYear(movie.release_date)
@@ -358,24 +383,31 @@ export default async function FilmPage({ params }: PageProps) {
             )}
 
             {/* Ratings & Reviews */}
-            <h2 className="font-display text-2xl text-cream mb-4 mt-10">Ratings &amp; Reviews</h2>
+            <div className="flex items-center justify-between gap-4 mb-4 mt-10">
+              <h2 className="font-display text-2xl text-cream">Ratings &amp; Reviews</h2>
+              {user && (
+                <LogButton
+                  movie={movieMeta}
+                  titleId={titleId}
+                  existingLog={myExistingLog}
+                  variant="outline"
+                  label={reviewCtaLabel}
+                />
+              )}
+            </div>
             {reviews.length > 0 ? (
               <ReviewList reviews={reviews} />
             ) : (
               <div className="bg-surface-container rounded-xl p-8 text-center">
-                <p className="text-on-surface-variant mb-4">No ratings or reviews yet. Be the first.</p>
-                <div className="flex justify-center">
-                  {user ? (
-                    <LogButton movie={movieMeta} label="Log & Review" />
-                  ) : (
-                    <Link
-                      href="/sign-in"
-                      className="text-on-surface-variant text-sm hover:text-gold transition"
-                    >
-                      Sign in to write a review
-                    </Link>
-                  )}
-                </div>
+                <p className="text-on-surface-variant">No ratings or reviews yet. Be the first.</p>
+                {!user && (
+                  <Link
+                    href="/sign-in"
+                    className="text-on-surface-variant text-sm hover:text-gold transition mt-4 inline-block"
+                  >
+                    Sign in to write a review
+                  </Link>
+                )}
               </div>
             )}
 

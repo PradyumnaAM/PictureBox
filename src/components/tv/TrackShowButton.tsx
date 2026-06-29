@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { CheckCircle, Loader2, Tv, X } from 'lucide-react'
+import { CheckCircle, Loader2, Pencil, Tv, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { getPosterUrl, formatReleaseYear } from '@/lib/tmdb/helpers'
@@ -15,6 +15,13 @@ interface ShowMeta {
   name: string
   poster_path: string | null
   first_air_date: string
+}
+
+/** The viewer's current show-level log — prefills the modal for editing. */
+export interface ExistingShowLog {
+  status?: string | null
+  rating?: number | null
+  review?: string | null
 }
 
 // ─── Status options ───────────────────────────────────────────────────────────
@@ -76,17 +83,23 @@ function StarRating({
 
 function TrackShowModal({
   show,
+  existingLog,
   onClose,
 }: {
   show: ShowMeta
+  existingLog?: ExistingShowLog | null
   onClose: () => void
 }) {
   const posterUrl = getPosterUrl(show.poster_path, 'sm')
   const year = formatReleaseYear(show.first_air_date)
 
-  const [status, setStatus] = useState<StatusValue>('watching')
-  const [rating, setRating] = useState(0)
-  const [review, setReview] = useState('')
+  const initialStatus = STATUSES.some((s) => s.value === existingLog?.status)
+    ? (existingLog!.status as StatusValue)
+    : 'watching'
+
+  const [status, setStatus] = useState<StatusValue>(initialStatus)
+  const [rating, setRating] = useState(existingLog?.rating ?? 0)
+  const [review, setReview] = useState(existingLog?.review ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -267,22 +280,48 @@ function TrackShowModal({
 
 // ─── Button ───────────────────────────────────────────────────────────────────
 
-export default function TrackShowButton({ show }: { show: ShowMeta }) {
+const SOLID =
+  'bg-ember text-black font-sans text-label uppercase tracking-widest font-bold px-6 py-3 rounded ' +
+  'flex items-center gap-2 hover:bg-ember-hover active:scale-95 transition-all'
+
+const OUTLINE =
+  'surface-frost flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 ' +
+  'font-sans text-sm font-semibold text-cream transition-all hover:border-ember hover:text-ember active:scale-95'
+
+interface TrackShowButtonProps {
+  show: ShowMeta
+  label?: string
+  /** 'solid' = primary ember button; 'outline' = lighter frosted button. */
+  variant?: 'solid' | 'outline'
+  existingLog?: ExistingShowLog | null
+}
+
+export default function TrackShowButton({
+  show,
+  label = 'Track This Show',
+  variant = 'solid',
+  existingLog = null,
+}: TrackShowButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const outline = variant === 'outline'
 
   return (
     <>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="bg-ember text-black font-sans text-label uppercase tracking-widest font-bold px-6 py-3 rounded flex items-center gap-2 hover:bg-ember-hover active:scale-95 transition-all"
+        className={outline ? OUTLINE : SOLID}
       >
-        <Tv className="w-4 h-4" />
-        Track This Show
+        {outline ? <Pencil className="w-4 h-4" /> : <Tv className="w-4 h-4" />}
+        {label}
       </button>
 
       {isOpen && (
-        <TrackShowModal show={show} onClose={() => setIsOpen(false)} />
+        <TrackShowModal
+          show={show}
+          existingLog={existingLog}
+          onClose={() => setIsOpen(false)}
+        />
       )}
     </>
   )
